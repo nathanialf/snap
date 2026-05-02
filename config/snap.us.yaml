@@ -139,6 +139,7 @@ segments:
       - [0x32ED0, asm]
       - [0x33040, asm]
       - [0x33110, asm]
+      - [0x331A0, c, func_801325A0]
       - [0x331B0, asm]
       - [0x33230, asm]
       - [0x33380, asm]
