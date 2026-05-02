@@ -14,7 +14,7 @@
 # =============================================================================
 
 name: pokemonsnap
-sha1: ""                          # filled in by config/sha1sums.txt cross-check
+sha1: edc7c49cc568c045fe48be0d18011c30f393cbaf
 options:
   platform: n64
   basename: pokemonsnap.us
@@ -54,5 +54,35 @@ options:
 #
 # When you add a segment, the build will start producing real asm under
 # asm/ for that range; nothing under asm/ is committed to the repo.
+#
+# Initial split (minimal):
+#
+#   - header (0x0..0x40)         standard N64 ROM header, opaque bin
+#   - boot   (0x40..0x1000)      IPL3 bootloader, opaque bin (CIC-specific,
+#                                round-tripped without interpretation)
+#   - main   (0x1000..end)       game code+data, vram derived from the
+#                                entry-point field of the user's ROM header
+#
+# The entry-point address (0x80100400) is a 32-bit configuration value, not
+# game content. The 'main' segment is intentionally left as one large code
+# region for now; splat's find_file_boundaries will discover natural splits,
+# and contributors will refine into per-overlay subsegments over time.
 # ---------------------------------------------------------------------------
-segments: []
+segments:
+  - name: header
+    type: header
+    start: 0x0
+
+  - name: boot
+    type: bin
+    start: 0x40
+
+  - name: main
+    type: code
+    start: 0x1000
+    vram: 0x80100400
+    bss_size: 0
+    subsegments:
+      - [0x1000, asm]
+
+  - [0x1000000]   # end of ROM (16 MiB)
