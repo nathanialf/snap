@@ -1,0 +1,12 @@
+# Symbol address overrides for splat / the linker.
+#
+# Format:    name = 0xADDRESS;     // optional comment
+#
+# POLICY: every symbol name in this file must either be (a) a public name
+# documented externally (e.g. libultra entry points like 'osInitialize'), or
+# (b) a name we invented ourselves while reverse-engineering. Names lifted
+# directly from leaked Nintendo development materials are NOT permitted —
+# rename them before committing.
+#
+# This file starts empty. As contributors identify functions and globals
+# they will add lines here in PRs.

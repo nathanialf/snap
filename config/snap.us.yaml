@@ -1,0 +1,58 @@
+# =============================================================================
+# splat configuration — Pokémon Snap (US 1.0)
+#
+# This is a SKELETON. It declares the structure splat needs but contains
+# NO ROM-specific offsets, addresses, segment lists, or symbols. Filling
+# those in is part of the decompilation work — they must be derived by
+# contributors from a clean inspection of their own legally-obtained ROM.
+#
+# Any commit that adds offsets here should be accompanied by a note on how
+# they were determined (e.g. "header parse + visual inspection of crc/entry"),
+# and must not be copied from leaked materials or other unauthorized sources.
+#
+# Reference for splat YAML schema: https://github.com/ethteck/splat/wiki
+# =============================================================================
+
+name: pokemonsnap
+sha1: ""                          # filled in by config/sha1sums.txt cross-check
+options:
+  platform: n64
+  basename: pokemonsnap.us
+  base_path: ..                   # config/ -> project root
+  build_path: build
+  asset_path: assets
+  asm_path: asm
+  src_path: src
+  cache_path: build/.splat_cache
+  symbol_addrs_path:
+    - config/symbol_addrs.us.txt  # see file header for policy
+  undefined_funcs_auto_path: config/undefined_funcs_auto.us.txt
+  undefined_syms_auto_path:  config/undefined_syms_auto.us.txt
+  ld_script_path: config/pokemonsnap.us.ld
+  find_file_boundaries: true
+  o_as_suffix: true
+  use_legacy_include_asm: false
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  mnemonic_ljust: 12
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+
+# ---------------------------------------------------------------------------
+# Segments
+# ---------------------------------------------------------------------------
+# Intentionally empty. Populating this list is the first decompilation
+# milestone (see docs/PROGRESS.md). At minimum it will need:
+#
+#   - the ROM header segment
+#   - the IPL3 boot segment (treated as raw bin; not decompiled)
+#   - the main code segment
+#   - any overlay segments the engine loads dynamically
+#   - data and rodata regions
+#   - asset segments (audio bank, sequences, textures, etc.) treated as
+#     opaque bin and round-tripped without interpretation initially
+#
+# When you add a segment, the build will start producing real asm under
+# asm/ for that range; nothing under asm/ is committed to the repo.
+# ---------------------------------------------------------------------------
+segments: []

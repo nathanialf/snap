@@ -1,0 +1,19 @@
+# Refuse line-ending mangling on anything that could be binary
+*.z64   binary
+*.n64   binary
+*.v64   binary
+*.bin   binary
+*.rom   binary
+*.elf   binary
+*.o     binary
+
+# Normalize text
+*.c     text eol=lf
+*.h     text eol=lf
+*.s     text eol=lf
+*.S     text eol=lf
+*.py    text eol=lf
+*.md    text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+Makefile text eol=lf

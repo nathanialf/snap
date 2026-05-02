@@ -1,0 +1,23 @@
+# Expected SHA-1 fingerprints for supported ROM revisions.
+#
+# Format:  <40-hex-sha1>  baserom.<version>.z64
+#
+# A SHA-1 fingerprint is a one-way hash that lets the build verify the ROM
+# the user has placed at baserom.<version>.z64 is the revision the project
+# targets. It is not a copy of the ROM and is not copyrighted material.
+#
+# Hashes intentionally start UNSET. To add support for a revision:
+#   1. Dump your own legally-obtained cartridge.
+#   2. Compute its SHA-1: `sha1sum baserom.us.z64`.
+#   3. Cross-reference with a public dump database (no-intro, redump, etc.)
+#      to confirm your dump matches a known clean revision.
+#   4. Replace the leading '#' on the matching line below and paste the hash.
+#
+# Once a hash is set here, contributors who hold the same revision will be
+# able to participate; contributors with a different revision will get a
+# clear "wrong revision" error from `make verify` rather than a confusing
+# build failure.
+
+# 0000000000000000000000000000000000000000  baserom.us.z64
+# 0000000000000000000000000000000000000000  baserom.eu.z64
+# 0000000000000000000000000000000000000000  baserom.jp.z64
