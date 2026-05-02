@@ -18,6 +18,6 @@
 # clear "wrong revision" error from `make verify` rather than a confusing
 # build failure.
 
-# 0000000000000000000000000000000000000000  baserom.us.z64
+edc7c49cc568c045fe48be0d18011c30f393cbaf  baserom.us.z64
 # 0000000000000000000000000000000000000000  baserom.eu.z64
 # 0000000000000000000000000000000000000000  baserom.jp.z64
