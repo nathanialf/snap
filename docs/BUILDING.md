@@ -12,9 +12,33 @@ to work but are validated less often.
 |---------------------|----------------------------------|---------------------------|
 | Python 3.10+        | splat, progress, IP-safety check | system package manager    |
 | GNU Make            | top-level orchestration          | system package manager    |
-| MIPS GCC toolchain  | compile and link the ROM         | see `tools/setup.sh`      |
+| MIPS GCC toolchain  | assemble and link the ROM        | see `tools/setup.sh`      |
 | `binutils` for MIPS | objcopy, ld for MIPS             | shipped with the toolchain |
 | `git`               | submodules: splat, etc.          | system package manager    |
+| IDO 7.1 (recompiled)| compile decompiled C to matching MIPS | see "IDO toolchain" below |
+
+### IDO toolchain
+
+Decompiled C in `src/` is compiled with **IDO 7.1** — the SGI compiler the
+original was built with — recompiled to a native binary by
+[ido-static-recomp](https://github.com/decompals/ido-static-recomp). Modern
+GCC will not produce matching bytes, so this toolchain is required to make
+the SHA-1 check pass once any C is added.
+
+The IDO toolchain lives **outside this repo** to keep the project's IP
+story clean. Set it up once:
+
+```sh
+git clone https://github.com/decompals/ido-static-recomp.git \
+    ~/.local/share/ido-recomp
+cd ~/.local/share/ido-recomp
+make setup
+make VERSION=7.1 -j$(nproc)
+```
+
+The Makefile defaults to `IDO_DIR=$HOME/.local/share/ido-recomp/build/7.1/out`.
+Override with `make IDO_DIR=/path/to/your/ido/out` if installed elsewhere, or
+`make IDO_VERSION=5.3` to use the 5.3 build (also produced by the recomp).
 
 After cloning, run:
 

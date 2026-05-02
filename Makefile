@@ -24,20 +24,40 @@ CC            := $(MIPS_PREFIX)gcc
 LD            := $(MIPS_PREFIX)ld
 OBJCOPY       := $(MIPS_PREFIX)objcopy
 
+# IDO toolchain — used to compile decompiled C against the original ABI so the
+# rebuilt ROM matches byte-for-byte. The IDO binaries themselves are not part
+# of this repo; install ido-static-recomp (decompals) somewhere on disk and
+# point IDO_DIR at its build/<version>/out/ directory.
+IDO_VERSION   ?= 7.1
+IDO_DIR       ?= $(HOME)/.local/share/ido-recomp/build/$(IDO_VERSION)/out
+IDO_CC        := $(IDO_DIR)/cc
+
 BUILD_DIR     := build
 ASM_DIR       := asm
 ASSET_DIR     := assets
+SRC_DIR       := src
 
 # Object lists are derived at parse time from whatever splat has emitted.
 # 'make setup' must have run first; otherwise these are empty and link fails
 # with a clear "no input files" error.
 ASM_SRCS      := $(wildcard $(ASM_DIR)/*.s)
 ASM_OBJS      := $(patsubst $(ASM_DIR)/%.s,$(BUILD_DIR)/asm/%.o,$(ASM_SRCS))
+C_SRCS        := $(wildcard $(SRC_DIR)/*.c)
+C_OBJS        := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/src/%.o,$(C_SRCS))
 BIN_SRCS      := $(wildcard $(ASSET_DIR)/*.bin)
 BIN_OBJS      := $(patsubst $(ASSET_DIR)/%.bin,$(BUILD_DIR)/assets/%.o,$(BIN_SRCS))
-ALL_OBJS      := $(ASM_OBJS) $(BIN_OBJS)
+ALL_OBJS      := $(ASM_OBJS) $(C_OBJS) $(BIN_OBJS)
 
 ASFLAGS       := -EB -march=vr4300 -mabi=32 -G 0 -no-pad-sections -Iinclude
+
+# IDO 5.3 matching flags. -mips2 = R4300 ISA without 64-bit ops, -O2 is the
+# common HAL/Nintendo build setting, -g3 keeps optimisations but emits debug
+# info, -KPIC for absolute addressing, -non_shared for static link, -Xfullwarn
+# enables strict diagnostics, and the -woff list silences warnings that aren't
+# meaningful for matching work. -G 0 keeps small-data off.
+CFLAGS_IDO    := -c -G 0 -non_shared -Xfullwarn -fullwarn -O2 \
+                 -mips2 -woff 649,838,712,807 \
+                 -signed -nostdinc -Iinclude
 LDSCRIPT      := config/pokemonsnap.us.ld
 AUTO_FUNCS    := config/undefined_funcs_auto.us.txt
 AUTO_SYMS     := config/undefined_syms_auto.us.txt
@@ -128,7 +148,7 @@ split: verify | $(VENV)/.installed
 # preserve: any change that breaks the SHA-1 either (a) introduced bytes that
 # differ from the original or (b) shifted layout.
 
-$(BUILD_DIR) $(BUILD_DIR)/asm $(BUILD_DIR)/assets:
+$(BUILD_DIR) $(BUILD_DIR)/asm $(BUILD_DIR)/assets $(BUILD_DIR)/src:
 	@mkdir -p $@
 
 $(BUILD_DIR)/asm/%.o: $(ASM_DIR)/%.s | $(BUILD_DIR)/asm
@@ -136,6 +156,17 @@ $(BUILD_DIR)/asm/%.o: $(ASM_DIR)/%.s | $(BUILD_DIR)/asm
 
 $(BUILD_DIR)/assets/%.o: $(ASSET_DIR)/%.bin | $(BUILD_DIR)/assets
 	@$(MIPS_PREFIX)ld -r -b binary -o $@ $<
+
+# C → .o via IDO. IDO writes ELF32 MIPS big-endian objects natively; the GNU
+# linker on the host links them with the asm-derived objects without trouble.
+$(BUILD_DIR)/src/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)/src
+	@if [ ! -x "$(IDO_CC)" ]; then \
+		echo "ERROR: IDO compiler not found at $(IDO_CC)" >&2; \
+		echo "       Build ido-static-recomp (see docs/BUILDING.md) and set IDO_DIR." >&2; \
+		exit 1; \
+	fi
+	@echo "  CC   $<"
+	@$(IDO_CC) $(CFLAGS_IDO) -o $@ $<
 
 $(BUILD_DIR)/pokemonsnap.us.elf: $(ALL_OBJS) $(LDSCRIPT) | $(BUILD_DIR)
 	@if [ -z "$(strip $(ALL_OBJS))" ]; then \

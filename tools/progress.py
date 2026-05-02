@@ -65,12 +65,12 @@ def collect_stats(version: str = "us") -> Stats:
                 continue
             s.asm_bytes += _count_asm_text_bytes(p)
 
-    # Matched bytes: sum of '.text' size of every object in build/ whose
+    # Matched bytes: sum of '.text' size of every object in build/src/ whose
     # source is in src/. Falls back to 0 if no build has happened.
-    if BUILD_DIR.is_dir():
-        for p in BUILD_DIR.rglob("*.o"):
-            rel = p.relative_to(BUILD_DIR)
-            # The build mirrors src/'s structure into build/.
+    src_obj_root = BUILD_DIR / "src"
+    if src_obj_root.is_dir():
+        for p in src_obj_root.rglob("*.o"):
+            rel = p.relative_to(src_obj_root)
             src_candidate = SRC_DIR / rel.with_suffix(".c")
             if src_candidate.is_file():
                 s.matched_bytes += _text_section_size(p)

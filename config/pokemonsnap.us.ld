@@ -169,7 +169,7 @@ SECTIONS
         build/asm/3D980.o(.text);
         build/asm/3D990.o(.text);
         build/asm/3D9A0.o(.text);
-        build/asm/3DCB0.o(.text);
+        build/src/getters.o(.text);
         build/asm/3DCC0.o(.text);
         build/asm/3DCF0.o(.text);
         build/asm/3DEA0.o(.text);
@@ -462,7 +462,7 @@ SECTIONS
         build/asm/3D980.o(.data);
         build/asm/3D990.o(.data);
         build/asm/3D9A0.o(.data);
-        build/asm/3DCB0.o(.data);
+        build/src/getters.o(.data);
         build/asm/3DCC0.o(.data);
         build/asm/3DCF0.o(.data);
         build/asm/3DEA0.o(.data);
@@ -755,7 +755,7 @@ SECTIONS
         build/asm/3D980.o(.rodata);
         build/asm/3D990.o(.rodata);
         build/asm/3D9A0.o(.rodata);
-        build/asm/3DCB0.o(.rodata);
+        build/src/getters.o(.rodata);
         build/asm/3DCC0.o(.rodata);
         build/asm/3DCF0.o(.rodata);
         build/asm/3DEA0.o(.rodata);
@@ -1053,7 +1053,7 @@ SECTIONS
         build/asm/3D980.o(.bss);
         build/asm/3D990.o(.bss);
         build/asm/3D9A0.o(.bss);
-        build/asm/3DCB0.o(.bss);
+        build/src/getters.o(.bss);
         build/asm/3DCC0.o(.bss);
         build/asm/3DCF0.o(.bss);
         build/asm/3DEA0.o(.bss);

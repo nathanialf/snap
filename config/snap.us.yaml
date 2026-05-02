@@ -218,7 +218,7 @@ segments:
       - [0x3D980, asm]
       - [0x3D990, asm]
       - [0x3D9A0, asm]
-      - [0x3DCB0, asm]
+      - [0x3DCB0, c, getters]
       - [0x3DCC0, asm]
       - [0x3DCF0, asm]
       - [0x3DEA0, asm]
