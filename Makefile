@@ -28,6 +28,26 @@ BUILD_DIR     := build
 ASM_DIR       := asm
 ASSET_DIR     := assets
 
+# Object lists are derived at parse time from whatever splat has emitted.
+# 'make setup' must have run first; otherwise these are empty and link fails
+# with a clear "no input files" error.
+ASM_SRCS      := $(wildcard $(ASM_DIR)/*.s)
+ASM_OBJS      := $(patsubst $(ASM_DIR)/%.s,$(BUILD_DIR)/asm/%.o,$(ASM_SRCS))
+BIN_SRCS      := $(wildcard $(ASSET_DIR)/*.bin)
+BIN_OBJS      := $(patsubst $(ASSET_DIR)/%.bin,$(BUILD_DIR)/assets/%.o,$(BIN_SRCS))
+ALL_OBJS      := $(ASM_OBJS) $(BIN_OBJS)
+
+ASFLAGS       := -EB -march=vr4300 -mabi=32 -G 0 -no-pad-sections -Iinclude
+LDSCRIPT      := config/pokemonsnap.us.ld
+AUTO_FUNCS    := config/undefined_funcs_auto.us.txt
+AUTO_SYMS     := config/undefined_syms_auto.us.txt
+EXTRA_SYMS    := config/undefined_funcs_extra.us.txt
+SYMBOL_ADDRS  := config/symbol_addrs.us.txt
+LDFLAGS       := -EB -T $(LDSCRIPT) \
+                 -T $(AUTO_FUNCS) -T $(AUTO_SYMS) -T $(EXTRA_SYMS) \
+                 --no-check-sections \
+                 -Map $(BUILD_DIR)/pokemonsnap.us.map
+
 # ---- Phony targets -----------------------------------------------------------
 
 .PHONY: all setup verify split clean distclean check-no-rom progress help
@@ -88,18 +108,55 @@ split: verify | $(VENV)/.installed
 		echo "      The split step is a no-op until config is filled in." >&2; \
 	else \
 		$(VENV_BIN)/splat split $(SPLAT_YAML); \
+		$(VENV_BIN)/python tools/postprocess_asm.py; \
+		$(VENV_BIN)/python tools/gen_symbols_from_asm.py; \
 	fi
 	@mkdir -p $(ASM_DIR) $(ASSET_DIR) $(BUILD_DIR)
 
-# ---- Build (placeholder until src/ has matched code) -------------------------
+# ---- Build -------------------------------------------------------------------
+#
+# Round-trip pipeline:
+#
+#   asm/<addr>.s ──as──▶ build/asm/<addr>.o     ─┐
+#                                                 ├──ld──▶ build/.elf ──objcopy──▶ build/.z64
+#   assets/<n>.bin ──ld -r -b binary──▶ build/assets/<n>.o ─┘                          │
+#                                                                                       ▼
+#                                                                          sha1 vs sha1sums.txt
+#
+# When all input is asm + raw bin (i.e. no C is decomped yet), the output ROM
+# must be byte-identical to baserom.us.z64. That is the gate every PR has to
+# preserve: any change that breaks the SHA-1 either (a) introduced bytes that
+# differ from the original or (b) shifted layout.
 
-$(TARGET_ROM): split
-	@mkdir -p $(BUILD_DIR)
-	@echo "NOTE: no decompiled code is currently linked." >&2
-	@echo "      Once src/ contains matched objects, this rule will compile" >&2
-	@echo "      and link them into $(TARGET_ROM). For now it produces" >&2
-	@echo "      a stub so 'make' succeeds and CI can run." >&2
-	@: > $(TARGET_ROM).stub
+$(BUILD_DIR) $(BUILD_DIR)/asm $(BUILD_DIR)/assets:
+	@mkdir -p $@
+
+$(BUILD_DIR)/asm/%.o: $(ASM_DIR)/%.s | $(BUILD_DIR)/asm
+	@$(MIPS_PREFIX)as $(ASFLAGS) -o $@ $<
+
+$(BUILD_DIR)/assets/%.o: $(ASSET_DIR)/%.bin | $(BUILD_DIR)/assets
+	@$(MIPS_PREFIX)ld -r -b binary -o $@ $<
+
+$(BUILD_DIR)/pokemonsnap.us.elf: $(ALL_OBJS) $(LDSCRIPT) | $(BUILD_DIR)
+	@if [ -z "$(strip $(ALL_OBJS))" ]; then \
+		echo "ERROR: no object files. Run 'make setup' first." >&2; exit 1; \
+	fi
+	@echo "  LD   $@"
+	@$(MIPS_PREFIX)ld $(LDFLAGS) -o $@
+
+$(TARGET_ROM): $(BUILD_DIR)/pokemonsnap.us.elf
+	@echo "  GEN  $@"
+	@$(MIPS_PREFIX)objcopy -O binary $< $@
+	@expected=$$(awk '$$1 ~ /^[0-9a-f]{40}$$/ && $$2 == "baserom.us.z64" {print $$1; exit}' $(SHA1SUMS)); \
+	 actual=$$(sha1sum $@ | awk '{print $$1}'); \
+	 if [ "$$expected" = "$$actual" ]; then \
+		echo "OK: $@ matches expected SHA-1 ($$expected)"; \
+	 else \
+		echo "MISMATCH:" >&2; \
+		echo "  expected: $$expected" >&2; \
+		echo "  got:      $$actual"  >&2; \
+		exit 1; \
+	 fi
 
 # ---- Progress / safety -------------------------------------------------------
 
