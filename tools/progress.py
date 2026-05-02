@@ -85,21 +85,62 @@ def collect_stats(version: str = "us") -> Stats:
     return s
 
 
+_INSN_RE = re.compile(r"^\s*/\*\s*[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s+[0-9A-Fa-f]+\s*\*/\s*\S")
+_WORD_RE = re.compile(r"^\s*\.word\b")
+_HALF_RE = re.compile(r"^\s*\.(?:half|short)\b")
+_BYTE_RE = re.compile(r"^\s*\.byte\b")
+_FLOAT_RE = re.compile(r"^\s*\.float\b")
+_DOUBLE_RE = re.compile(r"^\s*\.double\b")
+_ASCII_RE = re.compile(r'^\s*\.(asciz?|asciiz)\s+"((?:[^"\\]|\\.)*)"')
+_SPACE_RE = re.compile(r"^\s*\.(?:space|skip|fill)\s+(0x[0-9A-Fa-f]+|\d+)")
+
+
 def _count_asm_text_bytes(path: Path) -> int:
-    """Heuristic byte-count for a splat-emitted .s file: 4 bytes per
-    instruction-looking line. Splat emits one mnemonic per line, so this
-    is accurate enough for progress tracking without parsing.
+    """Sum the ROM bytes represented by splat's .s output.
+
+    Splat (via spimdisasm) emits one of:
+      - an instruction line prefixed by '/* romoff vram bytes */ <mnemonic>'
+        where <bytes> is the 4-byte hex encoding of the instruction
+      - .word / .half / .short / .byte / .float / .double directives
+      - .ascii / .asciz / .asciiz "<string>" directives
+      - .space / .skip / .fill <count> for padding
+    Every other line (labels, comments, .set/.section/.align/etc) carries
+    no ROM bytes.
+
+    A handful of corner cases are intentionally rough (multi-value .word
+    lists are rare in splat output; handwritten asm under nonmatchings/ is
+    excluded by the caller).
     """
     n = 0
-    insn_re = re.compile(r"^\s*\.?[A-Za-z]")  # crude: lines starting with a word
-    skip_re = re.compile(r"^\s*(#|/\*|\*/|\.section|\.set|\.align|\.size|\.type|\.globl|\.weak|\.byte|\.half|\.word|\.ascii|\.asciz|\.space|glabel|jlabel|dlabel)")
     try:
         with path.open("r", errors="replace") as f:
             for line in f:
-                if skip_re.match(line):
-                    continue
-                if insn_re.match(line):
+                if _INSN_RE.match(line):
                     n += 4
+                    continue
+                if _WORD_RE.match(line) or _FLOAT_RE.match(line):
+                    n += 4
+                    continue
+                if _HALF_RE.match(line):
+                    n += 2
+                    continue
+                if _BYTE_RE.match(line):
+                    n += 1
+                    continue
+                if _DOUBLE_RE.match(line):
+                    n += 8
+                    continue
+                m = _ASCII_RE.match(line)
+                if m:
+                    s = m.group(2).encode("utf-8", "replace").decode("unicode_escape", "replace")
+                    n += len(s.encode("latin-1", "replace"))
+                    if m.group(1) in ("asciz", "asciiz"):
+                        n += 1
+                    continue
+                m = _SPACE_RE.match(line)
+                if m:
+                    n += int(m.group(1), 0)
+                    continue
     except OSError:
         return 0
     return n
