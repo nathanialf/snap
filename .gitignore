@@ -81,3 +81,7 @@ Thumbs.db
 .env.local
 config/local.*
 expected/
+
+# --- Agent guidance (kept local; not part of the public project) ---
+CLAUDE.md
+.claude/
