@@ -1,8 +1,16 @@
 # Pinning is light intentionally — these tools evolve quickly across N64
 # decomp projects. Re-pin if a CI run breaks.
-splat>=0.27
-asm-differ
+splat64
+spimdisasm
+rabbitizer
+intervaltree
 pyelftools
 pyyaml
 crunch64
 n64img
+pygfxd
+tqdm
+colorama
+# Note: asm-differ is a git project (github.com/simonlindholm/asm-differ),
+# not a PyPI package. It is fetched separately via tools/setup.sh once the
+# splat output exists and contributors want function-level diffing.

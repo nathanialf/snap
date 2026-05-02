@@ -27,8 +27,8 @@ nothing here embeds ROM bytes.
 | Metric              | Bytes |    % |
 |---------------------|------:|-----:|
 | Decompiled (matched)|     0 | 0.00 |
-| Asm split           |     0 | 0.00 |
-| Assets extracted    |     0 | 0.00 |
+| Asm split           | 203880 | 100.00 |
+| Assets extracted    |  4032 | --   |
 
 _No baseline run has produced numbers yet — this table updates after the
 first successful `make setup` + `python3 tools/progress.py --update`._

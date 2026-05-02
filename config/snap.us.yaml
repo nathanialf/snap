@@ -19,6 +19,7 @@ options:
   platform: n64
   basename: pokemonsnap.us
   base_path: ..                   # config/ -> project root
+  target_path: baserom.us.z64     # user-supplied ROM, gitignored
   build_path: build
   asset_path: assets
   asm_path: asm
