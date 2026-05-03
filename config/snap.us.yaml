@@ -221,6 +221,8 @@ segments:
       - [0x38460, asm]
       - [0x38490, asm]
       - [0x384C0, asm]
+      - [0x386F0, c, func_80137AF0]
+      - [0x38708, asm]
       - [0x38710, asm]
       - [0x38AE0, asm]
       - [0x38B70, asm]
