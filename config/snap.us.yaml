@@ -157,7 +157,7 @@ segments:
       - [0xA360, c, func_80109760]
       - [0xA390, asm]
       - [0xB340, c, func_8010A740]
-      - [0xB3B0, asm]
+      - [0xB428, asm]
       - [0xB5D8, c, func_8010A9D8]
       - [0xB60C, asm]
       - [0xC2F0, c, func_8010B6F0]
