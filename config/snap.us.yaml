@@ -217,6 +217,7 @@ segments:
       - [0x19E78, asm]
       - [0x1A560, c, func_80119960]
       - [0x1A594, asm]
+      - [0x1A8D0, c, func_80119CD0]
       - [0x1A948, c, func_80119D48]
       - [0x1A960, asm]
       - [0x1AF60, asm]
