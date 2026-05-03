@@ -93,7 +93,6 @@ segments:
       - [0x1520, c, func_80100920]
       - [0x1528, asm]
       - [0x1A34, c, func_80100E34]
-      - [0x1A6C, c, func_80100E6C]
       - [0x1ABC, asm]
       - [0x35BC, c, func_801029BC]
       - [0x3610, asm]
