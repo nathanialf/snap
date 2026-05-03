@@ -167,6 +167,11 @@ Sub-variants — count and shape of spills classifies them:
   spilling the arg to its home slot. Permuter discovered this on
   `func_8011E25C` / `func_8011E40C`. Less Frankenstein-y than the
   `&arg` trick because it doesn't add a stack-allocated pointer var.
+  Generalises across the whole "Mtx-build wrapper" family
+  (`func_8011E25C/E40C` 6-arg, `func_8011B7FC/E08C` 10-arg,
+  `func_8011BB48/D1F0` 11-arg). Suspect the original source had a
+  pragma or wrapper macro doing equivalent forcing; `arg^0` is the
+  minimal C source-side substitute.
 
 ### `bnel` / branch-likely loops
 When the asm has a backward `bnel`/`bnezl`/`beql` whose delay slot is

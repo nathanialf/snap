@@ -98,3 +98,23 @@ and commit nothing — you'll review its output before integrating.
 auto-regenerated artefacts (`config/pokemonsnap.us.ld`,
 `config/undefined_funcs_extra.us.txt`) caught up to your yaml edits,
 working tree clean.
+
+**Wrap-up if your Claude session usage is about to run out.**
+Unsupervised sessions can hit the rolling Claude usage cap
+mid-iteration. Before that happens, *land what you have*:
+
+1. If a function matches: stage + commit it immediately, don't batch.
+2. If a function is mid-attempt and not matching: revert the yaml +
+   delete the partial `src/<func>.c`. Don't leave the build red.
+3. If you discovered a new pattern, trick, or deferred-class entry:
+   write it into `decomp/NOTES.md` or `docs/MATCHING_NOTES.md` and
+   commit *that* even if no match landed — the lesson is the value.
+4. If a tool needs a fix you've already implemented: include
+   `tools/` in the same commit as the matches that motivated it.
+5. Final commit before stopping: ensure `git status` is clean and
+   `make` is green at the target SHA-1. A failing build left in the
+   tree blocks the next session before it can start.
+
+When in doubt, prefer "stop one match early, commit, leave a clean
+tree" over "squeeze in one more attempt and run out of budget
+mid-edit."

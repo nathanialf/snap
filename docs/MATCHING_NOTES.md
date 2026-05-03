@@ -39,6 +39,20 @@ that resisted a quick match and what to investigate next.
   `func_80131A90`.
 - **Bit-clear on packed field** (`*(u16 *)... &= ~arg`) matches; IDO
   emits `not $t, $a; and $t, $r, $t` cleanly. See `func_801287F0`.
+- **Mtx-build wrapper family** (mixed s32 + f32 args, build a matrix
+  on local stack and apply it). Signature shape:
+  `void f(s32 obj, f32 b, f32 c, s32 mode, f32... rest)`. Body shape:
+  `s32 buf[16]; build(buf, b, c, mode^0, rest...); apply(buf, obj);`.
+  Match recipe: ANSI prototype with the actual mixed types, but pass
+  the lone s32 mid-arg as `mode ^ 0` so IDO emits the dead-spill of
+  `$a3` to its home slot (K&R would force the spill but breaks the
+  f32 args via cvt.s.d). Confirmed on:
+  - `func_8011E25C` / `func_8011E40C` (6 args, helpers
+    `func_8001E20C` / `func_8001E3BC` + `func_8001B320`)
+  - `func_8011B7FC` / `func_8011E08C` (10 args, helpers
+    `func_8001B570` / `func_8001E028` + `func_8001B0F0` /
+    `func_8001B320`)
+  - `func_8011BB48` / `func_8011D1F0` (11 args)
 
 ## Tough nuts (deferred)
 
