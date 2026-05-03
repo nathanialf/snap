@@ -185,6 +185,7 @@ $(TARGET_ROM): $(BUILD_DIR)/pokemonsnap.us.elf
 	 actual=$$(sha1sum $@ | awk '{print $$1}'); \
 	 if [ "$$expected" = "$$actual" ]; then \
 		echo "OK: $@ matches expected SHA-1 ($$expected)"; \
+		$(VENV_BIN)/python tools/progress.py --update >/dev/null 2>&1 || true; \
 	 else \
 		echo "MISMATCH:" >&2; \
 		echo "  expected: $$expected" >&2; \
