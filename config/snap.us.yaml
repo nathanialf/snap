@@ -204,6 +204,8 @@ segments:
       - [0x1B4B8, asm]
       - [0x1B640, c, func_8011AA40]
       - [0x1B688, asm]
+      - [0x1BB30, c, func_8011AF30]
+      - [0x1BB80, asm]
       - [0x1BCF0, asm]
       - [0x1F960, asm]
       - [0x20940, asm]
