@@ -21,6 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ASM_DIR = ROOT / "asm"
+SRC_DIR = ROOT / "src"
 OUT = ROOT / "config" / "undefined_funcs_extra.us.txt"
 EXISTING = [
     ROOT / "config" / "undefined_funcs_auto.us.txt",
@@ -31,6 +32,8 @@ EXISTING = [
 REF_RE = re.compile(r"\b(func_|D_)([0-9A-Fa-f]{4,8})\b")
 DEFINED_RE = re.compile(r"^\s*(func_|D_)([0-9A-Fa-f]{4,8})\s*=\s*0x", re.M)
 GLABEL_RE = re.compile(r"^\s*(?:glabel|alabel|jlabel|dlabel)\s+(func_|D_)([0-9A-Fa-f]{4,8})", re.M)
+# Match a definition in a C source file: any (func_|D_)NAME followed by ( or = or [ or ;
+C_DEF_RE = re.compile(r"\b(func_|D_)([0-9A-Fa-f]{4,8})\b\s*[(\[=;]", re.M)
 
 
 def collect_defined() -> set[str]:
@@ -40,6 +43,14 @@ def collect_defined() -> set[str]:
             continue
         for m in DEFINED_RE.finditer(p.read_text(errors="replace")):
             defined.add(f"{m.group(1)}{m.group(2).upper()}")
+    if SRC_DIR.is_dir():
+        for c in SRC_DIR.rglob("*.c"):
+            try:
+                text = c.read_text(errors="replace")
+            except OSError:
+                continue
+            for m in C_DEF_RE.finditer(text):
+                defined.add(f"{m.group(1)}{m.group(2).upper()}")
     return defined
 
 

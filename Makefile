@@ -167,6 +167,8 @@ $(BUILD_DIR)/src/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)/src
 	fi
 	@echo "  CC   $<"
 	@$(IDO_CC) $(CFLAGS_IDO) -o $@ $<
+	@$(MIPS_PREFIX)objcopy --set-section-alignment .text=4 $@ $@ 2>/dev/null || true
+	@python3 tools/trim_ido_padding.py $@ 2>/dev/null || true
 
 $(BUILD_DIR)/pokemonsnap.us.elf: $(ALL_OBJS) $(LDSCRIPT) | $(BUILD_DIR)
 	@if [ -z "$(strip $(ALL_OBJS))" ]; then \
