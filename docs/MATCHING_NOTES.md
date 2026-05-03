@@ -97,20 +97,59 @@ that defeated CSE (e.g. function-pointer cast that the optimizer
 treats as opaque). Likely fix: declare `D_80042CB0` once as a function
 and one cast as `(s32)&D_80042CB0` and one through a different alias.
 
+### `func_8010EB28` / `func_8010EB98` — switch with absolute jumptable
+28-insn sibling pair, both pure switch-on-arg1 with 10 cases each
+returning a different `f32` field of `arg0`. The body bytes match
+trivially with a plain `switch` statement — the only diff is the two
+instructions that load the jumptable address:
+
+```
+base:  lui $at, %hi(jtbl_800438A8_main)   ; lw $t6, %lo(...)($at)
+built: lui $at, 0x8110                    ; lw $t6, -0xC00($at)
+```
+
+The original ROM's jumptable lives at VRAM `0x800438A8` (and
+`0x800438D0`), which is *below* the main segment's VRAM start
+(`0x80100400`) — outside any segment we currently carve. splat has
+recorded these as absolute symbols (`jtbl_800438A8_main` etc. in
+`config/undefined_syms_auto.us.txt`), but our compiler emits its own
+jumptable into our `.rodata` at a high address. ROM bytes therefore
+diverge at the lui/lo immediates.
+
+Until we either (a) carve the rodata segment that contains these
+jumptables and reference them as `extern` (computed-goto, not standard
+C — IDO support TBD), or (b) figure out how the original linker
+positioned per-function rodata at low VRAM, switch statements with
+external jumptables are unmatched. Defer.
+
+### "IDO-picks-s0-over-stack-spill" cluster — `func_80135270` / `func_8013D820` / `func_80138F50` / `func_8013B2D0`
+Family of small libultra-style "lock + body + unlock" wrappers where
+the value returned from the middle call has to survive across the
+unlock call. The original IDO allocates `$s0` to hold that value
+(adding `sw $s0` / `lw $s0` to prologue/epilogue and an extra `or
+$s0,$v0; or $v0,$s0`), but our IDO 7.1 decides spill-`$v0`-to-local
+is cheaper and skips the s-reg allocation entirely. Net effect: a
+~4-insn frame-size + epilogue diff that no source-side tweak we've
+tried (plain code, `register`, K&R live-spill, ordering) reproduces.
+
+`func_80135270/D820` (16-insn): `func_80038D70()` → load
+`*(D_80042EBx + 4)` → `func_80038D90(saved)` → return loaded value.
+Permuter ran ~51k iters @ speed 100, never scored below 420 (base 465).
+
+`func_80138F50/13B2D0` (18-insn): `func_80035A30()` → spill 3 args →
+`result = func_8003B320(a,b,c)` (or `func_8003BB20`) → `func_80035A74()`
+→ return result. Same s0-allocation gap.
+
+Other matched callers of these helper pairs (e.g. `func_80137B10`,
+`func_80124F54`) take the spill-to-stack path *and* match — so the
+behavior is definitely consistent between our IDO and the original
+IDO; the original's choice to use s0 in *these* specific functions
+must come from a source-level construct we haven't identified yet.
+Deferred as a single class — cracking one will unblock the others.
+
 ### `func_80135270` / `func_8013D820` — int-mask-protected ptr deref
-Identical 16-insn shape: `__osDisableInt`-style call → load `*(D_80042EBx + 4)`
-→ `__osRestoreInt`-style call → return loaded value. The original IDO
-allocates `$s0` for the saveMask (`or $s0,$v0; or $a0,$s0`) even though
-the lifetime never crosses a function call. Our build skips the s0
-allocation entirely and emits `or $a0,$v0` with no s-reg save. Tried:
-plain code, `register s32 saved`, `register u32 saveMask`. Permuter ran
-~51k iterations at speed 100 without scoring below 420 (vs base 465).
-The fact that other matched callers of `func_80038D70`/`90` (e.g.
-`func_80137B10`) spill `$v0` to stack instead of allocating `$s0`
-suggests something specific in the source-level structure of these two
-funcs forces s-reg allocation — possibly an extra inline-helper call or
-an unusual `register` placement. Defer until we learn the libultra-style
-idiom variant the original used.
+See above (folded into the shared "IDO-picks-s0-over-stack-spill"
+cluster).
 
 ### `func_80137860` / `func_80137890` / `func_8013CD50` — HW-reg bit tests
 Identical shape: read a hardware register, mask, return 1/0. Original

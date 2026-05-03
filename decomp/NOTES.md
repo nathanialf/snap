@@ -157,6 +157,16 @@ Sub-variants — count and shape of spills classifies them:
   `jal`). The unused `home` pointer compiles cleanly without an
   unused-var warning under `-Xfullwarn`. Confirmed on
   `func_8010A410` / `func_8010A450`.
+- **ANSI int dead-spill via `arg ^ 0`.** When the asm has
+  `sw $aN, sp+homeN` for an int arg that is otherwise pass-through to
+  a single call (typical of "build matrix + apply matrix" wrappers
+  where you can't use K&R because of mixed f32 args), plain ANSI
+  declaration *won't* emit the spill. `s32 *home = &arg` works but
+  bumps frame size by 8. Use `func(..., arg ^ 0, ...)` instead — XOR
+  with zero is semantically a no-op but enough to force IDO into
+  spilling the arg to its home slot. Permuter discovered this on
+  `func_8011E25C` / `func_8011E40C`. Less Frankenstein-y than the
+  `&arg` trick because it doesn't add a stack-allocated pointer var.
 
 ### `bnel` / branch-likely loops
 When the asm has a backward `bnel`/`bnezl`/`beql` whose delay slot is
