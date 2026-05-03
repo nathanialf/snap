@@ -200,6 +200,8 @@ segments:
       - [0x1AF60, asm]
       - [0x1B03C, c, vec3]
       - [0x1B130, asm]
+      - [0x1B48C, c, func_8011A88C]
+      - [0x1B4B8, asm]
       - [0x1BCF0, asm]
       - [0x1F960, asm]
       - [0x20940, asm]
