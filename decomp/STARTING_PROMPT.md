@@ -37,11 +37,24 @@ commits. Stage `src/`, `config/`, `tools/`, `decomp/`, `docs/`, and
   (note: ROM offset, not VRAM — silent false MATCH past EOF).
 - `tools/permute_run.sh <vram> <size> <seed.c>` — decomp-permuter
   driver; cracks operand-order / regalloc / scheduling near-misses.
+  Seed file MUST be ANSI prototype style (the wrapper now pre-flights
+  for K&R param decls and bails with an error). The matched `src/` file
+  itself can stay K&R — only the seed for the permuter needs ANSI.
 
 **Per-cluster workflow:** identify shape via `find_siblings` → write one
 C file → test with `match_check.py` → copy template across siblings
 with target swaps → `make split && make` → commit. SHA-1 target:
 `edc7c49cc568c045fe48be0d18011c30f393cbaf`.
+
+**Long-running commands.** `make split` is ~75s and the permuter
+typically runs for minutes. Run them with `run_in_background: true` and
+poll with `Monitor` against the output file rather than blocking on
+foreground `Bash`. Useful Monitor patterns:
+
+- Permuter: `tail -f <permuter.log> | grep --line-buffered -E "score = 0|matched|wrote|Error|Exception"` — fires when the run finds a score-0 candidate, errors out, or exits. Don't grep only for success ("score = 0") — include error patterns so a pycparser crash or compile failure also surfaces, instead of going silent.
+- Build watch: `until make 2>&1 | tail -3 | grep -q "MATCH\|MISMATCH"; do sleep 2; done` — emits when the build settles, with the verdict line.
+
+If the monitor fires "timed out", that's the watch giving up — not a tool failure. Re-arm if the underlying job is still running, or check the output file directly with `Read`. Background `Bash` calls send their own completion event when the command exits; use those for one-shot waits and `Monitor` for streaming progress events.
 
 **When a near-miss won't yield in 2-3 attempts:**
 1. Check the saved feedback memories
