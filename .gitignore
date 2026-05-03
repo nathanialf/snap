@@ -88,6 +88,12 @@ expected/
 # ultralib sources are tracked, but the ultralib tree itself is not.
 lib/ultralib/
 
+# --- decomp-permuter (cloned locally, driven by tools/permute_run.sh) ---
+# Upstream: https://github.com/simonlindholm/decomp-permuter. Not committed;
+# users clone it themselves into tools/decomp-permuter/. Run artefacts under
+# tools/decomp-permuter/runs/ are also covered by this rule.
+tools/decomp-permuter/
+
 # --- Agent guidance (kept local; not part of the public project) ---
 CLAUDE.md
 .claude/
