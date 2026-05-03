@@ -1,5 +1,9 @@
 #include "common.h"
 
+s32 func_80131FB8(s32 *arg0) {
+    return arg0[3];
+}
+
 void func_80131FC0(s32 *arg0, s32 *arg1) {
     *(s32 *) ((u8 *) arg0 + 0x8) = *(s32 *) ((u8 *) arg1);
     *(s16 *) ((u8 *) arg0 + 0x1A) = *(s16 *) ((u8 *) arg1 + 0xC);
