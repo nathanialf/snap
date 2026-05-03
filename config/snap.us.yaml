@@ -502,6 +502,8 @@ segments:
       - [0x50628C, asm]
       - [0x506290, asm]
       - [0x5064F0, asm]
+      - [0x50691C, c, func_80605D1C]
+      - [0x506930, asm]
       - [0x506DD0, asm]
       - [0x506FB0, asm]
       - [0x52E460, asm]
