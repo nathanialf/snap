@@ -209,6 +209,8 @@ segments:
       - [0x159F0, asm]
       - [0x15B98, c, func_80114F98]
       - [0x15BF0, asm]
+      - [0x15FEC, c, func_801153EC]
+      - [0x16048, asm]
       - [0x16490, c, func_80115890]
       - [0x164E8, asm]
       - [0x1739C, c, func_8011679C]
