@@ -98,6 +98,8 @@ SECTIONS
         build/asm/C430.o(.text);
         build/src/func_8010B998.o(.text);
         build/asm/C5B0.o(.text);
+        build/src/func_8010BC2C.o(.text);
+        build/asm/C8A8.o(.text);
         build/src/func_8010BD44.o(.text);
         build/asm/C9DC.o(.text);
         build/asm/D150.o(.text);
@@ -517,6 +519,8 @@ SECTIONS
         build/asm/C430.o(.data);
         build/src/func_8010B998.o(.data);
         build/asm/C5B0.o(.data);
+        build/src/func_8010BC2C.o(.data);
+        build/asm/C8A8.o(.data);
         build/src/func_8010BD44.o(.data);
         build/asm/C9DC.o(.data);
         build/asm/D150.o(.data);
@@ -936,6 +940,8 @@ SECTIONS
         build/asm/C430.o(.rodata);
         build/src/func_8010B998.o(.rodata);
         build/asm/C5B0.o(.rodata);
+        build/src/func_8010BC2C.o(.rodata);
+        build/asm/C8A8.o(.rodata);
         build/src/func_8010BD44.o(.rodata);
         build/asm/C9DC.o(.rodata);
         build/asm/D150.o(.rodata);
@@ -1360,6 +1366,8 @@ SECTIONS
         build/asm/C430.o(.bss);
         build/src/func_8010B998.o(.bss);
         build/asm/C5B0.o(.bss);
+        build/src/func_8010BC2C.o(.bss);
+        build/asm/C8A8.o(.bss);
         build/src/func_8010BD44.o(.bss);
         build/asm/C9DC.o(.bss);
         build/asm/D150.o(.bss);
