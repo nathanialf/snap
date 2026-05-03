@@ -185,6 +185,8 @@ segments:
       - [0xC944, c, func_8010BD44]
       - [0xC9DC, asm]
       - [0xD150, asm]
+      - [0x11C90, c, func_80111090]
+      - [0x11CBC, asm]
       - [0x11E30, c, func_80111230]
       - [0x11E54, c, func_80111254]
       - [0x11E60, c, func_80111260]
