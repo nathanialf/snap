@@ -2,6 +2,7 @@
 
 extern s32 D_8004A958;
 extern s32 D_8004A95C;
+extern s32 D_80040D60;
 
 void func_80107CBC(s16 *arg0) {
     s16 v;
@@ -13,4 +14,8 @@ void func_80107CBC(s16 *arg0) {
     arg0[5] = v;
     arg0[1] = v;
     arg0[2] = arg0[6];
+}
+
+void func_80107D08(s32 arg0) {
+    D_80040D60 = arg0;
 }
