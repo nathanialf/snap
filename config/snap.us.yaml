@@ -498,6 +498,8 @@ segments:
       - [0x4BE370, asm]
       - [0x4CACB0, asm]
       - [0x504C00, asm]
+      - [0x506244, c, func_80605644]
+      - [0x50628C, asm]
       - [0x506290, asm]
       - [0x5064F0, asm]
       - [0x506DD0, asm]
