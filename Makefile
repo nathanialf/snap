@@ -153,6 +153,7 @@ $(BUILD_DIR) $(BUILD_DIR)/asm $(BUILD_DIR)/assets $(BUILD_DIR)/src:
 
 $(BUILD_DIR)/asm/%.o: $(ASM_DIR)/%.s | $(BUILD_DIR)/asm
 	@$(MIPS_PREFIX)as $(ASFLAGS) -o $@ $<
+	@$(MIPS_PREFIX)objcopy --set-section-alignment .text=4 $@ $@ 2>/dev/null || true
 
 $(BUILD_DIR)/assets/%.o: $(ASSET_DIR)/%.bin | $(BUILD_DIR)/assets
 	@$(MIPS_PREFIX)ld -r -b binary -o $@ $<
