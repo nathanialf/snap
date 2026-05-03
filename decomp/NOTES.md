@@ -12,6 +12,21 @@ the saved-memory feedback files in
 
 ---
 
+## ultralib vendoring (IP exception)
+
+Vendoring `decompals/ultralib` (its `.c` source and `include/PR/`
+headers, including the SGI/Nintendo copyright text) is permitted in this
+repo, matching community norm across N64 decomp projects (OoT, MM,
+MK64, Banjo-Kazooie, Yoshi's Story, etc.). This exception applies
+**only** to ultralib; all other Nintendo-derived material (game source,
+leaked development docs, asset extractions) remains forbidden.
+ultralib lives at `lib/ultralib/` and is gitignored — clone it locally
+via `git clone --depth 1 https://github.com/decompals/ultralib lib/ultralib`.
+
+We currently target SDK release **2.0J** (Snap shipped 1999, between
+Yoshi's Story which uses 2.0I and OoT which uses 2.0L; 2.0J is the
+era-appropriate pick and is supported by ultralib).
+
 ## Compiler choice & flags
 
 - **IDO 7.1 is the matching compiler.** GCC won't match. `cc1` / clang
@@ -188,13 +203,61 @@ by operand-order, defer it — this is decomp-permuter territory.
   `lw+sw` of the masked value (built). No source-side trigger
   found; permuter territory.
 
+## decomp-permuter usage
+
+decomp-permuter is installed locally (gitignored) at
+`tools/decomp-permuter/` and driven by the wrapper
+`tools/permute_run.sh`. The permuter runs the project's exact IDO 7.1
+matching CFLAGS against a candidate-set the wrapper builds from
+splat-emitted asm and a hand-written seed C file.
+
+Workflow:
+
+1. Write a seed `*.c` somewhere (does NOT need to be in `src/`; can be
+   `/tmp/seed_func_<addr>.c`). Include `"common.h"` and define exactly
+   the function being matched.
+2. Run:
+   ```
+   tools/permute_run.sh 0x80131A54 0x38 /tmp/seed_func_80131A54.c \
+       -- -j 4 --speed 100 --stop-on-zero
+   ```
+   Args after `--` are passed straight through to `permuter.py`. Useful
+   ones: `-j N` (parallel workers), `--speed N` (1..100, raises
+   randomization rate), `--stop-on-zero` (exit when one matches),
+   `--debug --print-diffs` (see the initial near-miss diff before
+   randomization starts).
+3. On match, the wrapper exits 0 and prints the path to a
+   `runs/<func>/output-0-N/source.c` with a score-0 candidate. That
+   file is the post-pycparser canonicalised form — typically with new
+   tmp variables IDO didn't strictly need. Translate it back to a
+   minimal hand-written form before committing to `src/`.
+
+Validated end-to-end on `func_80131A54` (vram 0x80131A54, ROM 0x32654,
+size 0x38). Initial near-miss at score 10 was a `mul.s` operand-order
+diff; permuter found a score-0 permutation at iteration ~330 with
+`--speed 100`.
+
+Notes / pitfalls:
+
+- Never commit anything under `tools/decomp-permuter/`. The directory
+  itself is a local install; `runs/` contains gitignored intermediates.
+- `--debug --print-diffs` only runs the base candidate once and exits;
+  use this to inspect the starting near-miss without burning iterations.
+- The permuter's score-0 candidate is post-pycparser pretty-printed
+  C — the syntax (e.g. `(new_var2 = arg1 * 1.0f)`) is a hint about
+  IDO's scheduling, not the literal source line that should land in
+  the repo. Hand-rewrite it cleanly, recompile, confirm `match_check`
+  still says MATCH, then commit.
+- Permuter mutations are derived purely from the seed C the user
+  wrote, so output is IP-clean by construction. Still discard any
+  candidate with suspicious symbol names / magic constants pulled from
+  somewhere unexplained — same rule as any other contribution.
+
 ## Ideas to invest in next
 
-- **decomp-permuter.** The standard N64 decomp tool for resolving
-  scheduling/operand-order/register-allocation near-misses. Mutates
-  source within a candidate set and recompiles repeatedly; reports
-  any permutation that matches. Most of the deferred functions in
-  the "tough nut" categories above are exactly its use case.
+- **decomp-permuter.** Now installed (see above) — apply to deferred
+  scheduling / operand-order / register-allocation near-misses. The
+  "tough nut" category functions are the prime backlog.
 - **Diff against a leaked IDO 7.1 sub-version.** If `ido-static-recomp`
   ships 7.1 patch level X and the ROM was built with patch level Y, a
   handful of scheduling decisions can flip. Worth verifying the exact

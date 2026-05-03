@@ -58,6 +58,36 @@ ASFLAGS       := -EB -march=vr4300 -mabi=32 -G 0 -no-pad-sections -Iinclude
 CFLAGS_IDO    := -c -G 0 -non_shared -Xfullwarn -fullwarn -O2 \
                  -mips2 -woff 649,838,712,807 \
                  -signed -nostdinc -Iinclude
+
+# ---- Vendored ultralib (decompals/ultralib) ---------------------------------
+#
+# Cloned locally to lib/ultralib/ (gitignored). See decomp/NOTES.md
+# "ultralib vendoring (IP exception)" for the policy. Only files that splat
+# has been explicitly pointed at (via [ADDR, c, <name>] in the yaml,
+# resolved to lib/ultralib/src/<subdir>/<name>.c by the rules below) are
+# compiled. We don't build the whole archive — splat tracks file-level
+# substitution, and the linker pulls .o files in directly.
+#
+# Per-file CFLAGS overrides match ultralib's own makefiles/ido.mk for the
+# 2.0J target: -O1 for os/, log/; -O1 -mips3 -32 for libc/ll, libc/llbit,
+# libc/llcvt. All other ultralib files get the project default (-O2 -mips2).
+
+ULTRA_DIR     := lib/ultralib
+ULTRA_INC     := -I$(ULTRA_DIR)/include -I$(ULTRA_DIR)/include/PR \
+                 -I$(ULTRA_DIR)/include/PRinternal
+CFLAGS_ULTRA  := -c -G 0 -non_shared -Xfullwarn -Xcpluscomm -fullwarn -O2 \
+                 -mips2 -woff 649,838,712,807,516 \
+                 -signed -nostdinc -Iinclude $(ULTRA_INC)
+
+# Per-subtree overrides (set as target-specific variables below).
+CFLAGS_ULTRA_OS    := -c -G 0 -non_shared -Xfullwarn -Xcpluscomm -fullwarn -O1 \
+                      -mips2 -woff 649,838,712,807,516 \
+                      -signed -nostdinc -Iinclude $(ULTRA_INC)
+CFLAGS_ULTRA_LOG   := $(CFLAGS_ULTRA_OS)
+CFLAGS_ULTRA_LL    := -c -G 0 -non_shared -Xfullwarn -Xcpluscomm -fullwarn -O1 \
+                      -mips3 -32 -woff 649,838,712,807,516 \
+                      -signed -nostdinc -Iinclude $(ULTRA_INC)
+
 LDSCRIPT      := config/pokemonsnap.us.ld
 AUTO_FUNCS    := config/undefined_funcs_auto.us.txt
 AUTO_SYMS     := config/undefined_syms_auto.us.txt
@@ -65,7 +95,7 @@ EXTRA_SYMS    := config/undefined_funcs_extra.us.txt
 SYMBOL_ADDRS  := config/symbol_addrs.us.txt
 LDFLAGS       := -EB -T $(LDSCRIPT) \
                  -T $(AUTO_FUNCS) -T $(AUTO_SYMS) -T $(EXTRA_SYMS) \
-                 --no-check-sections \
+                 --no-check-sections --no-warn-mismatch \
                  -Map $(BUILD_DIR)/pokemonsnap.us.map
 
 # ---- Phony targets -----------------------------------------------------------
@@ -160,6 +190,25 @@ $(BUILD_DIR)/assets/%.o: $(ASSET_DIR)/%.bin | $(BUILD_DIR)/assets
 
 # C → .o via IDO. IDO writes ELF32 MIPS big-endian objects natively; the GNU
 # linker on the host links them with the asm-derived objects without trouble.
+#
+# Per-file CFLAGS selection: src/ultra_<subdir>_<name>.c shims pull from
+# lib/ultralib/src/<subdir>/<name>.c. The shim filename's <subdir> token
+# selects which CFLAGS_ULTRA_* set to use.
+#   src/ultra_io_*.c          → CFLAGS_ULTRA       (default -O2 -mips2)
+#   src/ultra_os_*.c          → CFLAGS_ULTRA_OS    (-O1)
+#   src/ultra_log_*.c         → CFLAGS_ULTRA_LOG   (-O1)
+#   src/ultra_libc_ll*.c      → CFLAGS_ULTRA_LL    (-O1 -mips3 -32)
+#   src/ultra_libc_*.c        → CFLAGS_ULTRA       (-O2 -mips2)
+#   src/*.c (no ultra_ prefix) → CFLAGS_IDO        (project default)
+
+# Pick the right flags via $(strip $(or ...)) chain — first match wins.
+ult_flags = $(strip \
+    $(if $(filter src/ultra_libc_ll%.c,$1),$(CFLAGS_ULTRA_LL), \
+    $(if $(filter src/ultra_os_%.c,$1),$(CFLAGS_ULTRA_OS), \
+    $(if $(filter src/ultra_log_%.c,$1),$(CFLAGS_ULTRA_LOG), \
+    $(if $(filter src/ultra_%.c,$1),$(CFLAGS_ULTRA), \
+    $(CFLAGS_IDO))))))
+
 $(BUILD_DIR)/src/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)/src
 	@if [ ! -x "$(IDO_CC)" ]; then \
 		echo "ERROR: IDO compiler not found at $(IDO_CC)" >&2; \
@@ -167,7 +216,7 @@ $(BUILD_DIR)/src/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)/src
 		exit 1; \
 	fi
 	@echo "  CC   $<"
-	@$(IDO_CC) $(CFLAGS_IDO) -o $@ $<
+	@$(IDO_CC) $(call ult_flags,$<) -o $@ $<
 	@$(MIPS_PREFIX)objcopy --set-section-alignment .text=4 $@ $@ 2>/dev/null || true
 	@python3 tools/trim_ido_padding.py $@ 2>/dev/null || true
 

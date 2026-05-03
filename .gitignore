@@ -82,6 +82,12 @@ Thumbs.db
 config/local.*
 expected/
 
+# --- Vendored ultralib (clean-room exception; cloned locally by setup) ---
+# See decomp/NOTES.md "ultralib vendoring" section. Not committed; users
+# clone decompals/ultralib themselves. Symlinks under src/ that point at
+# ultralib sources are tracked, but the ultralib tree itself is not.
+lib/ultralib/
+
 # --- Agent guidance (kept local; not part of the public project) ---
 CLAUDE.md
 .claude/
