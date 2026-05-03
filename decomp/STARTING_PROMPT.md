@@ -10,10 +10,9 @@ Working directive: match as many ROM functions as possible
 unsupervised, plug away at the percentage. Same rules as before — small
 targets, sibling clusters preferred, consolidate adjacent siblings into
 shared files when adjacent, semantic filenames only when the role is
-unambiguous. Do NOT include `tools/` in your git commits — a parallel
-instance commits those separately. Edit tools if you find errors. Stage
-only `src/`, `config/`, `README.md`, `docs/PROGRESS.md`. No AI co-author
-trailer.
+unambiguous. Edit tools when you find errors and include them in your
+commits. Stage `src/`, `config/`, `tools/`, `decomp/`, `docs/`, and
+`README.md` as relevant. No AI co-author trailer.
 
 **Read first** (in this order):
 
@@ -72,7 +71,6 @@ and commit nothing — you'll review its output before integrating.
 
 **Do not:**
 
-- Touch `tools/` in your commits.
 - Commit `lib/ultralib/` (gitignored), `tools/decomp-permuter/`
   (gitignored), `asm/` (except `asm/nonmatchings/`), `assets/`,
   `build/`, or `baserom.us.z64`.
@@ -86,5 +84,4 @@ and commit nothing — you'll review its output before integrating.
 `edc7c49cc568c045fe48be0d18011c30f393cbaf`, commits cleanly staged,
 auto-regenerated artefacts (`config/pokemonsnap.us.ld`,
 `config/undefined_funcs_extra.us.txt`) caught up to your yaml edits,
-working tree clean except for `tools/` (owned by the parallel
-instance).
+working tree clean.

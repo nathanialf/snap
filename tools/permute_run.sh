@@ -63,6 +63,37 @@ if [ ! -f "${SEED_C}" ]; then
     exit 1
 fi
 
+# --- Pre-flight: warn about K&R-style param decls in the seed ---------------
+# decomp-permuter routes the seed through pycparser, which does NOT accept
+# old-style K&R parameter declarations (the `)\n s32 arg0;\n s32 arg1;\n {`
+# shape). It crashes with "does not contain any function!" — confusing
+# because the function IS clearly there. Detect the pattern and bail with a
+# clear message so the user converts the seed to ANSI before retrying.
+# The actual src/ file can stay K&R; only the seed needs to be ANSI.
+if awk '
+    BEGIN { in_decl = 0 }
+    /^[A-Za-z_][A-Za-z_0-9 \*]* func[A-Za-z_0-9]*\([A-Za-z_0-9, ]*\)[[:space:]]*$/ {
+        in_decl = 1
+        next
+    }
+    in_decl && /^[[:space:]]*\{/ { in_decl = 0; next }
+    in_decl && /^[[:space:]]*(s8|u8|s16|u16|s32|u32|f32|f64|int|char|short|long|signed|unsigned|float|double|void)[ \*]/ {
+        print "K&R-style param decl detected at line", NR ": " $0
+        exit 1
+    }
+' "${SEED_C}" 2>&1 | head -5; then
+    : # no K&R detected
+else
+    echo "" >&2
+    echo "ERROR: seed file ${SEED_C} contains K&R-style parameter declarations." >&2
+    echo "       decomp-permuter's pycparser frontend does not accept K&R syntax;" >&2
+    echo "       it fails with 'does not contain any function!'." >&2
+    echo "       Convert the seed to ANSI prototype style before invoking the permuter." >&2
+    echo "       (Your src/ file can remain K&R — only the permuter seed needs ANSI.)" >&2
+    echo "" >&2
+    exit 1
+fi
+
 # --- Derive function name + locate splat asm --------------------------------
 # VRAM may have leading 0x; normalise to lowercase hex without prefix.
 VRAM_HEX="$(printf '%X' "$((VRAM))")"  # uppercase, no prefix
