@@ -147,6 +147,16 @@ Sub-variants — count and shape of spills classifies them:
   around float args because K&R always promotes float to double.
   Switch any K&R with float args to ANSI prototype with `f32`. See
   `feedback_snap_kr_float_promotion.md`.
+- **K&R int spill-elided when arg only used masked.** When the asm has
+  `sw $aN, sp+homeN` for a K&R int that is only used as `arg & 0xFF`
+  in a single call, plain K&R `int arg` will *not* emit the spill —
+  IDO sees the arg is read-only as a masked byte and elides the home
+  store. Force the spill by adding a dummy address-take: `s32 *home =
+  &arg;`. This forces arg into memory at its home slot while leaving
+  the call site as `func(...arg & 0xFF)` (`andi` in delay slot of
+  `jal`). The unused `home` pointer compiles cleanly without an
+  unused-var warning under `-Xfullwarn`. Confirmed on
+  `func_8010A410` / `func_8010A450`.
 
 ### `bnel` / branch-likely loops
 When the asm has a backward `bnel`/`bnezl`/`beql` whose delay slot is

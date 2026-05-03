@@ -97,6 +97,21 @@ that defeated CSE (e.g. function-pointer cast that the optimizer
 treats as opaque). Likely fix: declare `D_80042CB0` once as a function
 and one cast as `(s32)&D_80042CB0` and one through a different alias.
 
+### `func_80135270` / `func_8013D820` — int-mask-protected ptr deref
+Identical 16-insn shape: `__osDisableInt`-style call → load `*(D_80042EBx + 4)`
+→ `__osRestoreInt`-style call → return loaded value. The original IDO
+allocates `$s0` for the saveMask (`or $s0,$v0; or $a0,$s0`) even though
+the lifetime never crosses a function call. Our build skips the s0
+allocation entirely and emits `or $a0,$v0` with no s-reg save. Tried:
+plain code, `register s32 saved`, `register u32 saveMask`. Permuter ran
+~51k iterations at speed 100 without scoring below 420 (vs base 465).
+The fact that other matched callers of `func_80038D70`/`90` (e.g.
+`func_80137B10`) spill `$v0` to stack instead of allocating `$s0`
+suggests something specific in the source-level structure of these two
+funcs forces s-reg allocation — possibly an extra inline-helper call or
+an unusual `register` placement. Defer until we learn the libultra-style
+idiom variant the original used.
+
 ### `func_80137860` / `func_80137890` / `func_8013CD50` — HW-reg bit tests
 Identical shape: read a hardware register, mask, return 1/0. Original
 allocates an empty 8-byte stack frame (no spills) and uses `$a0` as
