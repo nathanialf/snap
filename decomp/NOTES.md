@@ -277,11 +277,14 @@ addiu $sp,8`.
   build; the original keeps `lui` *after* the branch. Volatile
   doesn't help (only applies to the `lw`, not the independent
   `lui`).
-- **Mixed-call $a1 byte preservation** (`func_8010A8A4/A8E8/AB30`).
-  K&R `u8 arg` with the byte used both before and across a function
-  call — IDO chooses register-spill via `sb+lbu` (base) vs
-  `lw+sw` of the masked value (built). No source-side trigger
-  found; permuter territory.
+- **Mixed-call $a1 byte preservation** — RESOLVED. The functions
+  `func_8010A8A4`, `func_8010A8E8`, and `func_8010AB30` all match
+  with K&R `unsigned char arg1` and an `if (arg1 >= 0x20) { panic; }`
+  guard before the body for AB30. The "byte preservation across call"
+  pattern uses `sb $a1, 0x27($sp); ... lbu $a1, 0x27($sp)` from the
+  K&R spill area when the byte needs to survive across a `jal`; the
+  K&R declaration alone is enough to trigger this. Confirmed at -O2
+  default flags.
 
 ## decomp-permuter usage
 
