@@ -46,6 +46,46 @@ C file → test with `match_check.py` → copy template across siblings
 with target swaps → `make split && make` → commit. SHA-1 target:
 `edc7c49cc568c045fe48be0d18011c30f393cbaf`.
 
+**Consolidating adjacent .c subsegments.** As gaps fill, two or more
+adjacent `[addr, c, name]` entries can usually be merged into a
+single subsegment + single `.c` file with no codegen change. This is
+purely organizational and validated by re-running `make` to a
+green SHA. When you have idle cycles between matching attempts (or
+during a wrap-up pass), look for adjacent c-c pairs:
+
+```
+awk '/^[[:space:]]+- \[0x/ {gsub(/[][,]/," "); type=$3; name=$4;
+  if (prev_type=="c" && type=="c") print prev_addr" "prev_name"  +  "$2" "name;
+  prev_addr=$2; prev_type=type; prev_name=name }' config/snap.us.yaml
+```
+
+To merge a run of N adjacent .c files into one:
+1. Pick the lowest-address filename as the merged target (e.g.
+   `func_8010BEAC.c` for the run BEAC..BFB8). Use a semantic name
+   only when the role is unambiguous across all merged functions.
+2. Concatenate function bodies in their VRAM order; dedupe `extern`
+   declarations and `#include`s; remove redundant `extern`s if
+   they're now provided by another sibling in the same file.
+3. Replace the N yaml entries with a single entry — splat will
+   treat the merged subsegment as covering everything from its
+   start address to the next subsegment.
+4. Delete the now-orphaned source files: `rm src/func_<other>.c`.
+5. `make split && make`. SHA-1 must still match — if it diverges,
+   you almost certainly mis-ordered the function bodies in the
+   merged file or have a stray .c file that splat is still picking
+   up.
+
+**Limits.** Cap merged files at **~10 functions or ~200 lines**,
+whichever comes first. Don't merge across an asm gap (that's a
+logical boundary the original source likely respected). Don't
+combine functions whose `extern` declarations contradict each other
+(rare, but possible if two functions in the same range call helpers
+of differing declared types).
+
+Validated end-to-end: the BEAC..BFB8 run consolidated 5 .c files
+(11 functions total, ~80 lines) into a single `src/func_8010BEAC.c`
+with no SHA change.
+
 **Long-running commands.** `make split` is ~75s and the permuter
 typically runs for minutes. Run them with `run_in_background: true` and
 poll with `Monitor` against the output file rather than blocking on
