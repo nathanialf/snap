@@ -171,14 +171,16 @@ What's needed (none of this is wired yet):
    loop iteration) so a malformed match attempt that accidentally
    captured ROM data fails the iteration instead of polluting git
    history.
-4. **State recovery on restart.** If the host reboots mid-iteration,
-   the next session must come back, read `git status` + `git log`,
-   notice any half-finished yaml carve / partial `src/<func>.c`,
-   revert it cleanly per the "Wrap-up" rules above, and resume
-   matching. The wrap-up rules already cover this conceptually but
-   they assume a graceful end-of-session — add explicit "resume from
-   crash" handling (idempotent revert of any orphaned in-progress
-   work).
+4. **Session-start sanity check.** Because we already commit eagerly
+   after every match, "crash recovery" collapses to a `git status`
+   read at the start of each loop iteration. If the tree is dirty:
+   either (a) re-run `make` and if MATCH, commit (the previous
+   session crashed *after* matching but *before* committing), or
+   (b) if MISMATCH or build-red, `git restore config/snap.us.yaml
+   && rm src/<orphaned>.c` (the previous session was mid-attempt
+   on a function that didn't match). No additional infrastructure
+   needed — git's atomicity + the eager-commit pattern is the
+   recovery mechanism. The session-start check is ~5 lines.
 5. **Progress + health telemetry.** A periodic summary (every N
    matches, or every 6h, whichever comes first) committed as part of
    the loop run so the user can `git log` the whole week and see
@@ -205,13 +207,16 @@ What's needed (none of this is wired yet):
 
 The pieces above span the harness layer (1, 2, 7), the matching
 workflow (3, 4, 6), and the operator-visibility layer (5, 8). Item 1
-is the unblocker — without a detached host process, none of the rest
-matters. Item 4 is the second-most-important because a single
-unhandled mid-iteration crash silently corrupts the working tree for
-the rest of the week.
+is the only real unblocker — without a detached host process, none
+of the rest matters. Items 3 and 6 (IP guardrails, permuter budget)
+are the next most important because they bound the blast radius of
+unattended runs. Item 4 used to look load-bearing but the
+eager-commit-after-each-match pattern already provides crash
+recovery for free; it just needs the trivial session-start check.
 
 When the user is ready to enable this, the planning task is "wire
-items 1+4 first, validate with a 24h dry run, then add the rest."
+item 1 first, validate with a 24h dry run, then add 3+6 and the
+rest."
 
 **End-of-session expectation:** build green at SHA-1
 `edc7c49cc568c045fe48be0d18011c30f393cbaf`, commits cleanly staged,
