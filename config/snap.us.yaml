@@ -137,7 +137,7 @@ segments:
       - [0x8604, c, func_80107A04]
       - [0x8634, c, func_80107A34]
       - [0x8694, c, func_80107A94]
-      - [0x86FC, asm]
+      - [0x86FC, c, func_80107AFC]
       - [0x8758, c, func_80107B58]
       - [0x87C4, c, func_80107BC4]
       - [0x8814, asm]
