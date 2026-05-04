@@ -14,18 +14,39 @@ unambiguous. Edit tools when you find errors and include them in your
 commits. Stage `src/`, `config/`, `tools/`, `decomp/`, `docs/`, and
 `README.md` as relevant. No AI co-author trailer.
 
+**Balance the work, don't over-index on one technique.** The goal is
+matched-bytes growth across the whole ROM, not "match as many libultra
+helpers as possible." Libultra source via `src/ultra_*.c` is one tool
+in the toolkit — apply it when an asm shape matches a libultra
+primitive, but the bulk of unmatched ROM is *game* code. Aim for a
+rough split per session:
+
+- **~⅔ fresh matches** from `find_siblings`/`find_leaf_candidates` and
+  manual scanning — small leaves, sibling clusters, consolidations.
+  Game functions, libultra ports, whichever the next-easiest target
+  happens to be.
+- **~⅓ deferred / tough-nut revisits** from `docs/MATCHING_NOTES.md`,
+  prioritising entries whose failure mode plausibly matches recent
+  leverage (a new saved-memory trick, a pattern from a sibling that
+  just cracked).
+
+When you crack a tough nut, the *recipe* is often higher leverage than
+the function itself — codify it in `decomp/NOTES.md` and (if it
+generalises across ≥2 functions) promote to saved memory.
+
 **Run until the Claude usage cap stops you. Do not stop early.** Hitting
 a "natural seam" (current cluster cleared, deferred-list felt thin,
 nothing obvious in `find_siblings`/`find_leaf_candidates`) is **not** a
-reason to stop. When that happens, broaden the search: scan a different
-ROM range for libultra-shaped helpers, retry an older deferred entry
-under newly-acquired leverage (e.g. -O1 via `src/ultra_os_*.c`),
-re-read recent matches' siblings for cross-pattern reuse, or pick a
-medium-size unmatched function and start it. Only stop when the
-session is genuinely about to be cut off mid-edit (see "Wrap-up" rules
-below) — at which point the wrap-up steps still apply. Reporting "I
-stopped because the obvious seam ran out" without exhausting these
-fallbacks is a session bug, not a finish line.
+reason to stop. When that happens, broaden the search using the full
+toolkit: re-run the finders with relaxed thresholds, scan adjacent
+ROM ranges for new shape families, retry an older deferred entry under
+newly-acquired leverage (e.g. -O1 via `src/ultra_os_*.c`, struct-by-
+value, K&R sub-variants — see saved memory), launch the permuter on
+a near-miss, or pick a medium-size unmatched function and start it.
+Only stop when the session is genuinely about to be cut off mid-edit
+(see "Wrap-up" rules below) — at which point the wrap-up steps still
+apply. Reporting "I stopped because the obvious seam ran out" without
+exhausting these fallbacks is a session bug, not a finish line.
 
 **Read first** (in this order):
 
