@@ -83,17 +83,21 @@ while true; do
     ls -1t "$DEBUG_DIR"/iter_*.debug.log 2>/dev/null \
         | tail -n +$((DEBUG_KEEP + 1)) | xargs -r rm -f
 
-    # Backgrounded heartbeat: emit "alive" + last debug line every $HEARTBEAT_SEC.
+    # Backgrounded heartbeat: every $HEARTBEAT_SEC, surface the most recent
+    # *informative* debug line — the next tool call about to run, the result
+    # of one that just finished, or an explicit error. Bare `tail -n 1` was
+    # catching low-signal lines (`Spawning shell without login`) most ticks.
     (
         hb_iter=$iter
-        hb_start=$start
         while sleep "$HEARTBEAT_SEC"; do
-            now=$(date +%s)
-            dur=$((now - hb_start))
-            last_debug="$(tail -n 1 "$debug_file" 2>/dev/null | tr -d '\r' | head -c 200)"
-            if [[ -z "$last_debug" ]]; then last_debug="(no debug output yet)"; fi
-            printf '%s shepherd: iter #%d alive @%ds | %s\n' \
-                "$(ts)" "$hb_iter" "$dur" "$last_debug" >> "$SHEPHERD_LOG"
+            last_event="$(tail -n 800 "$debug_file" 2>/dev/null \
+                | grep -E 'new action being classified:|tool_dispatch_end .* outcome=|Bash tool error|\[Stall\] (stream_idle_partial|tool_dispatch_start)' \
+                | tail -n 1 | tr -d '\r' \
+                | sed -E 's/.*\[(DEBUG|INFO|WARN)\] (\[(auto-mode|Stall)\] )?//' \
+                | head -c 260)"
+            if [[ -z "$last_event" ]]; then last_event="(no tool activity yet)"; fi
+            printf '%s shepherd: iter #%d | %s\n' \
+                "$(ts)" "$hb_iter" "$last_event" >> "$SHEPHERD_LOG"
         done
     ) &
     HEARTBEAT_PID=$!
