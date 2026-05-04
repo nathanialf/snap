@@ -384,7 +384,7 @@ SECTIONS
         build/asm/352C0.o(.text);
         build/asm/35600.o(.text);
         build/asm/35750.o(.text);
-        build/asm/35930.o(.text);
+        build/src/ultra_os_virtualtophysical.o(.text);
         build/asm/359B0.o(.text);
         build/asm/35A30.o(.text);
         build/src/ultra_os_pirawread.o(.text);
@@ -990,7 +990,7 @@ SECTIONS
         build/asm/352C0.o(.data);
         build/asm/35600.o(.data);
         build/asm/35750.o(.data);
-        build/asm/35930.o(.data);
+        build/src/ultra_os_virtualtophysical.o(.data);
         build/asm/359B0.o(.data);
         build/asm/35A30.o(.data);
         build/src/ultra_os_pirawread.o(.data);
@@ -1595,7 +1595,7 @@ SECTIONS
         build/asm/352C0.o(.rodata);
         build/asm/35600.o(.rodata);
         build/asm/35750.o(.rodata);
-        build/asm/35930.o(.rodata);
+        build/src/ultra_os_virtualtophysical.o(.rodata);
         build/asm/359B0.o(.rodata);
         build/asm/35A30.o(.rodata);
         build/src/ultra_os_pirawread.o(.rodata);
@@ -2205,7 +2205,7 @@ SECTIONS
         build/asm/352C0.o(.bss);
         build/asm/35600.o(.bss);
         build/asm/35750.o(.bss);
-        build/asm/35930.o(.bss);
+        build/src/ultra_os_virtualtophysical.o(.bss);
         build/asm/359B0.o(.bss);
         build/asm/35A30.o(.bss);
         build/src/ultra_os_pirawread.o(.bss);
