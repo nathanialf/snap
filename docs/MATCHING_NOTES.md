@@ -53,6 +53,10 @@ that resisted a quick match and what to investigate next.
     `func_8001B570` / `func_8001E028` + `func_8001B0F0` /
     `func_8001B320`)
   - `func_8011BB48` / `func_8011D1F0` (11 args)
+  - `func_8011DFCC` (7 args, helper `func_8001DF78` + `func_8001B320`)
+  - `func_8011BFAC` (11 args, helper `func_8001BBC4` + `func_8001B0F0`,
+    mode-as-arg1 variant — `arg1` passes straight through without a
+    spill so no `^ 0` trick is needed)
 
 ## Tough nuts (deferred)
 

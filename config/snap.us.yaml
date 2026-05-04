@@ -279,7 +279,7 @@ segments:
       - [0x1D714, c, func_8011CB14]
       - [0x1D76C, asm]
       - [0x1DC78, c, func_8011D078]
-      - [0x1DCC4, asm]
+      - [0x1DCC4, c, func_8011D0C4]
       - [0x1DD20, c, func_8011D120]
       - [0x1DD84, asm]
       - [0x1DDF0, c, func_8011D1F0]
