@@ -56,6 +56,24 @@ that resisted a quick match and what to investigate next.
 
 ## Tough nuts (deferred)
 
+### `func_8011E460` / `func_8011E5C0` — single-axis rotation matrices
+36-insn pair, both pure leaves: take `(f32 *dst, f32 angle)`, call
+sin (`func_80032A20`) and cos (`func_80038DE0`), then fill `dst[0..15]`
+as a Y-axis rotation (E5C0) or Z-axis rotation (E460). Plain
+sequential-store source matches every byte except for one IDO -O2 CSE
+trick: the original stores `1.0f` to the 4th-row diagonal slot
+(`dst[15]`) and then *re-reads* it as `lwc1 $f8, 0x3C($a0)` to use the
+same 1.0 for the 2nd-row (E5C0) / 3rd-row (E460) diagonal slot, instead
+of materialising the constant twice. Tried: sequential stores,
+reordered stores matching the asm flow, chained-assignment
+(`dst[5] = dst[15] = 1.0f`). All produced the stores but none of them
+emitted the lwc1 reload. Permuter ran ~11500 iters @ speed 100,
+plateaued at score 190 (vs base 285) — best candidates inserted dummy
+`if (1)` blocks and `dst[10] = (dst[11] = c)` chains that mirror the
+shape but not the byte sequence. Defer until a source-side trigger for
+"materialise constant once, reload from store-target for second use" is
+found.
+
 ### `func_80138DB0` — conditional getter
 The original returns `D_80042D10 ? D_80042D18 : 0` but does **not**
 hoist the second `lui` past the branch:
