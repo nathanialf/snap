@@ -446,3 +446,20 @@ plus $s0 spill (totally diverged).
 Likely needs an alt source-side trick — `register void *dramAddr` to push
 dramAddr (not direction) to a callee-save register? Skipping for now; the
 match_check diff was clear enough that a permuter run should crack it.
+
+## func_8011E460 / func_8011E5C0 / func_8011E2B0 (deferred — FP register choice)
+
+Z/Y/multi-axis rotation matrix builders. Pattern: call sinf+cosf (func_80032A20,
+func_80038DE0), build 4x4 matrix, return. Got down to 4-byte register-choice
+diff (f4 vs f6 swap):
+
+```
+base:  mtc1 at,$f6 ; neg.s $f4,$f14 ; swc1 $f6,0x3C(a0) ; swc1 $f4,0x10(a0)
+mine:  mtc1 at,$f4 ; neg.s $f6,$f14 ; swc1 $f4,0x3C(a0) ; swc1 $f6,0x10(a0)
+```
+
+Required `m[10] = *(volatile f32 *)&m[15]` to force the load-after-store dance
+(otherwise IDO reuses the const register for both stores). With that, only the
+register choice differs. Tried explicit `f32 ns = -s` local — no change.
+Permuter candidate. Likely all three rotation builders crack with the same
+trick once one does.
