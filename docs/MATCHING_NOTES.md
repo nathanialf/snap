@@ -379,3 +379,20 @@ registers for follow-the-pointer chains.
   whether the original ROM used a different one. The hoist behavior
   on `func_80138DB0` and the empty-frame pattern on the HW-bit-test
   trio both feel like compiler-version differences.
+
+## func_8012AC50 (deferred — FP scheduling)
+
+Computes `(s32)((f32)((f64)((f32)arg1 * (f32)arg0[17]) / D_800442B0 + 0.5))`. The
+scalar form matches the asm structurally but IDO 7.1 schedules the integer→float
+`mtc1`s and `cvt.s.w`s differently than the original:
+
+- **Base order:** `mtc1 a1,f4 ; mtc1 t6,f8 ; cvt.s.w f6,f4 ; ldc1 f4,D ; ... ; cvt.s.w f10,f8 ; mul.s f16,f6,f10`
+- **Mine:**     `mtc1 a1,f8 ; mtc1 t6,f4 ; cvt.s.w f10,f8 ; cvt.s.w f6,f4 ; ldc1 f4,D ; ... ; mul.s f16,f6,f10`
+
+IDO chooses to do BOTH `cvt.s.w`s before `ldc1`, while the original interleaves
+the second `cvt` AFTER the `ldc1` (so it can reuse `f4` for the constant). The
+operand order to `mul.s` ends up swapped (`f6=arg0[17]_f, f10=arg1_f` vs base's
+`f6=arg1_f, f10=arg0[17]_f`). The result is identical (mul commutes) but the
+encoding diverges. Tried: intermediate `f32 a, b` locals (worse), single `f32 t`
+intermediate (worse). No source-level construct found that forces IDO to defer
+the second `cvt.s.w` past the `ldc1`. Permuter candidate.
