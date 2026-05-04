@@ -418,7 +418,7 @@ SECTIONS
         build/src/memcpy.o(.text);
         build/src/strlen.o(.text);
         build/src/func_801376B4.o(.text);
-        build/asm/38300.o(.text);
+        build/src/ultra_os_createmesgqueue.o(.text);
         build/asm/38330.o(.text);
         build/asm/383B0.o(.text);
         build/src/ultra_os_sp_busy.o(.text);
@@ -1014,7 +1014,7 @@ SECTIONS
         build/src/memcpy.o(.data);
         build/src/strlen.o(.data);
         build/src/func_801376B4.o(.data);
-        build/asm/38300.o(.data);
+        build/src/ultra_os_createmesgqueue.o(.data);
         build/asm/38330.o(.data);
         build/asm/383B0.o(.data);
         build/src/ultra_os_sp_busy.o(.data);
@@ -1610,7 +1610,7 @@ SECTIONS
         build/src/memcpy.o(.rodata);
         build/src/strlen.o(.rodata);
         build/src/func_801376B4.o(.rodata);
-        build/asm/38300.o(.rodata);
+        build/src/ultra_os_createmesgqueue.o(.rodata);
         build/asm/38330.o(.rodata);
         build/asm/383B0.o(.rodata);
         build/src/ultra_os_sp_busy.o(.rodata);
@@ -2211,7 +2211,7 @@ SECTIONS
         build/src/memcpy.o(.bss);
         build/src/strlen.o(.bss);
         build/src/func_801376B4.o(.bss);
-        build/asm/38300.o(.bss);
+        build/src/ultra_os_createmesgqueue.o(.bss);
         build/asm/38330.o(.bss);
         build/asm/383B0.o(.bss);
         build/src/ultra_os_sp_busy.o(.bss);

@@ -468,7 +468,7 @@ segments:
       - [0x38260, c, memcpy]
       - [0x3828C, c, strlen]
       - [0x382B4, c, func_801376B4]
-      - [0x38300, asm]
+      - [0x38300, c, ultra_os_createmesgqueue]
       - [0x38330, asm]
       - [0x383B0, asm]
       - [0x38460, c, ultra_os_sp_busy]

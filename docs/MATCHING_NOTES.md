@@ -117,21 +117,20 @@ Tried: `volatile` locals (allocates own frame, wrong shape),
 (IDO spills extra dead stores). The original looks like K&R-style or a
 varargs decl. Worth revisiting once we identify the source style.
 
-### `func_80137700` — twin function-pointer init
-Original loads `&D_80042CB0` into TWO different temp regs ($t6 and $t7)
-and stores both to fields 0 and 4 of a struct:
+### `func_80137700` — osCreateMesgQueue (MATCHED)
+Resolved 2026-05-04. The function is libultra's `osCreateMesgQueue`
+(`lib/ultralib/src/os/createmesgqueue.c`). The "twin lui no-CSE" diff
+that defeated earlier attempts comes from the cast pattern:
+```c
+mq->mtqueue   = (OSThread *) &__osThreadTail.next;
+mq->fullqueue = (OSThread *) &__osThreadTail.next;
 ```
-lui $t6, %hi(D_80042CB0)
-lui $t7, %hi(D_80042CB0)
-addiu $t6, ...; addiu $t7, ...
-sw $t6, 0($a0)
-sw $t7, 4($a0)
-```
-IDO normally CSEs the two loads of the same address. The original
-either had two distinct symbols at the same address, or used a pattern
-that defeated CSE (e.g. function-pointer cast that the optimizer
-treats as opaque). Likely fix: declare `D_80042CB0` once as a function
-and one cast as `(s32)&D_80042CB0` and one through a different alias.
+The pointer cast on each field assignment forces IDO to materialise
+the same address twice — two `lui+addiu` sequences with no CSE — even
+though the underlying address is identical. Compiled at -O1 via
+`src/ultra_os_createmesgqueue.c` (CFLAGS_ULTRA_OS), with
+`__osThreadTail` declared as `extern struct ... D_80042CB0` plus
+`#define __osThreadTail D_80042CB0` to keep the source IP-clean.
 
 ### `func_8010EB28` / `func_8010EB98` — switch with absolute jumptable
 28-insn sibling pair, both pure switch-on-arg1 with 10 cases each
