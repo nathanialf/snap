@@ -66,6 +66,54 @@ If the monitor fires "timed out", that's the watch giving up — not a tool fail
    nuts" and pick a different cluster. Don't sink hours into one
    byte-level codegen difference.
 
+**Building leverage on tough nuts (the long game).** Defer is OK; the
+goal is for *each* deferred function to leave behind a documented
+pattern that makes the next attempt cheaper, ideally turning the
+tough-nut category from a permanent backlog into a "next time we
+visit, we now have the trick." Two complementary moves:
+
+1. **When you defer, document the *failure mode*, not just the
+   function.** In `docs/MATCHING_NOTES.md` for the entry, write what
+   IDO emitted, what every source-side construct produced, and what
+   the permuter's plateau-score / best-candidate looked like. The
+   point is to make it cheap for a future session to either resume
+   permuting from the same starting point or recognise a related
+   codegen quirk somewhere else.
+
+2. **When you crack a tough nut, codify the generalisation.** Don't
+   just commit the C; write the trick into `decomp/NOTES.md` "IDO
+   codegen patterns to recognise" with the *recipe* and at least one
+   alternative form ("this works, the cleaner-looking variant
+   doesn't, here's why we think so"). If it generalises across a
+   family, list every member you've confirmed it on in the entry —
+   future sessions should be able to grep for the pattern and apply
+   it without rediscovering.
+
+3. **Promote successful tricks into saved feedback memory.**
+   `~/.claude/projects/-primary-dev-snap/memory/feedback_snap_*.md` is
+   the highest-leverage tier — those load automatically into every
+   future session's context. Saved-memory candidates: any source-side
+   trick that turned a deferred near-miss into a match in a single
+   attempt across at least two functions.
+
+4. **Investigate what the permuter found, even on partial wins.**
+   When the permuter plateaus (e.g. score 190 instead of 0), read its
+   best-candidate `source.c`. The synthetic `if (1)` /
+   chained-assignment / dummy-temp shapes are hints about IDO's
+   internal scheduling state. They rarely transcribe directly into
+   clean source, but they often suggest *which* source-side knob
+   would unlock the remaining bytes. The deferred entry should
+   include the lowest plateau score and a one-line summary of the
+   best candidate's structural hints.
+
+5. **Spend time on cross-pattern reuse before brand-new attempts.**
+   If `find_siblings --unmatched` shows a cluster shape, first scan
+   `docs/MATCHING_NOTES.md` and `decomp/NOTES.md` for the same
+   shape's family (e.g. "Mtx-build wrapper family" was a single
+   recipe that unlocked 8 functions across 4 sibling clusters). The
+   right move on a new cluster is often "is this a member of an
+   already-cracked family?" before "is this a brand-new shape?"
+
 **Spawning a tooling subagent.** If you hit the same kind of friction
 3+ times in a session — same K&R sub-variant, same scheduling pattern,
 same yaml-split footgun — and a small targeted tool would unblock the
