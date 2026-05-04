@@ -154,6 +154,28 @@ C — IDO support TBD), or (b) figure out how the original linker
 positioned per-function rodata at low VRAM, switch statements with
 external jumptables are unmatched. Defer.
 
+### `func_80123074` — sound-channel byte-set, $a2/$a3 swap
+26-insn leaf in the sound-channel module. Stores `arg1` as a byte to
+`D_800968C8[arg0]` then calls `func_80032440(D_800968E4, D_800968C4[arg0])`.
+Five source variants tried (ANSI int, ANSI int+`&arg1` home, ANSI
+`(u8)arg1` cast, `arg1 & 0xFF`, K&R `unsigned char arg1`). The K&R
+`unsigned char` form is closest — exactly four byte diffs remain, all
+the same regalloc swap:
+
+  - base: `or $a3,$a0,0` (preserve arg0 to $a3) +
+    `andi $a2,$a1,0xFF` (mask into $a2) +
+    `sb $a2` + `addu …,$a3`
+  - built: `or $a2` + `andi $a3` + `sb $a3` + `addu …,$a2`
+
+Pure register-allocation flip — IDO picks $a2-low for what base
+picks $a3-low and vice versa. No source-side trigger found; this is
+permuter territory (decomp-permuter likely cracks it in <1k iters
+since the diff is 4 instructions of swapped allocation). The
+neighboring siblings `func_80122D54 / E20 / EEC / FD0` matched on
+the first/second attempt with K&R int + `(u32)arg1 < 0x80U` (sound
+critical-section) — the regalloc twist is specific to 80123074's
+shape (no critical section, no clamp, just byte-write + call).
+
 ### "IDO-picks-s0-over-stack-spill" cluster — `func_80135270` / `func_8013D820` / `func_80138F50` / `func_8013B2D0`
 Family of small libultra-style "lock + body + unlock" wrappers where
 the value returned from the middle call has to survive across the
