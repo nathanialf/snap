@@ -434,7 +434,7 @@ segments:
       - [0x35930, asm]
       - [0x359B0, asm]
       - [0x35A30, asm]
-      - [0x35D90, asm]
+      - [0x35D90, c, ultra_os_pirawread]
       - [0x35E50, asm]
       - [0x35E70, asm]
       - [0x360D0, asm]

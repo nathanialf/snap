@@ -384,7 +384,7 @@ SECTIONS
         build/asm/35930.o(.text);
         build/asm/359B0.o(.text);
         build/asm/35A30.o(.text);
-        build/asm/35D90.o(.text);
+        build/src/ultra_os_pirawread.o(.text);
         build/asm/35E50.o(.text);
         build/asm/35E70.o(.text);
         build/asm/360D0.o(.text);
@@ -980,7 +980,7 @@ SECTIONS
         build/asm/35930.o(.data);
         build/asm/359B0.o(.data);
         build/asm/35A30.o(.data);
-        build/asm/35D90.o(.data);
+        build/src/ultra_os_pirawread.o(.data);
         build/asm/35E50.o(.data);
         build/asm/35E70.o(.data);
         build/asm/360D0.o(.data);
@@ -1576,7 +1576,7 @@ SECTIONS
         build/asm/35930.o(.rodata);
         build/asm/359B0.o(.rodata);
         build/asm/35A30.o(.rodata);
-        build/asm/35D90.o(.rodata);
+        build/src/ultra_os_pirawread.o(.rodata);
         build/asm/35E50.o(.rodata);
         build/asm/35E70.o(.rodata);
         build/asm/360D0.o(.rodata);
@@ -2177,7 +2177,7 @@ SECTIONS
         build/asm/35930.o(.bss);
         build/asm/359B0.o(.bss);
         build/asm/35A30.o(.bss);
-        build/asm/35D90.o(.bss);
+        build/src/ultra_os_pirawread.o(.bss);
         build/asm/35E50.o(.bss);
         build/asm/35E70.o(.bss);
         build/asm/360D0.o(.bss);
