@@ -128,6 +128,18 @@ combine functions whose `extern` declarations contradict each other
 (rare, but possible if two functions in the same range call helpers
 of differing declared types).
 
+**Padding-gap caveat.** A merge will break the SHA-1 check if any of
+the original subsegments had **trailing nop padding** the next
+subsegment relied on for 0x10-byte alignment. Symptom: the diff shows
+the first function matches its body, but the *following* function
+appears shifted earlier by the missing 0x4–0xC bytes. Splat originally
+emitted those nops as part of the asm subsegment between functions; a
+single c subsegment doesn't reproduce them. Quick triage: pull each
+candidate subsegment's start/end from the yaml, sum the implied sizes,
+and compare to the sum of the C function bodies' instruction count × 8.
+If the C is shorter, there's pad. Either skip those particular pairs
+or merge only contiguous-no-pad runs.
+
 Validated end-to-end: the BEAC..BFB8 run consolidated 5 .c files
 (11 functions total, ~80 lines) into a single `src/func_8010BEAC.c`
 with no SHA change.
