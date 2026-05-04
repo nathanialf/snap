@@ -257,6 +257,37 @@ shake regalloc — got close but not matching.
 Deferred. Revisit when we crack the IDO-picks-s0 cluster — both
 likely come from the same regalloc heuristic difference.
 
+### `func_80133A04` — list-pop one-liner with $v0/$t9 regalloc
+4-insn function, ROM-bytes pattern:
+```
+lw   $v0, 0x0($a0)
+lw   $t9, 0x0($v0)
+jr   $ra
+sw   $t9, 0x0($a0)   ; (delay slot)
+```
+Body shape `*arg0 = (*arg0)->next; return old;`. With explicit return-
+value plumbing (signature `Node *func(Node **arg0)` returning the old
+head) we get the FIRST temp into `$v0` (matches), but the second temp
+lands in `$t6` instead of the expected `$t9` — IDO's allocator picks
+the next sequential temp register, not `$t9`.
+
+Tried: nested-deref one-liner, explicit local intermediate, struct-
+typed `Node` with `->next`, `void*`/`u8*`/`u32*` casts. All produce
+either `$t6/$t7` (no return) or `$v0/$t6` (with return). Permuter ran
+~250 iters @ 5 min, plateau score 10 (base 10), no improvement —
+mutations like `if (1){}`, dummy temps, chained assignments all stayed
+at the same diff.
+
+The `$t9`-as-second-temp choice may be tied to: (a) function-pointer-
+register pun (IDO recognises that the loaded value will be jumped
+through next), (b) a specific cast/typedef that signals to IDO's
+allocator. Not yet found. Permuter best candidate inserted `new_var2
+= arg0; ... return *new_var2;` — same plateau.
+
+Deferred. Revisit if a future match cracks the `$t9`-second-temp
+pattern, or if we figure out the IDO heuristic that picks high-temp
+registers for follow-the-pointer chains.
+
 ## Ideas worth trying next
 
 - Decompile non-leaf functions whose callees can stay as asm — the
