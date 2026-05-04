@@ -119,11 +119,14 @@ while true; do
     end=$(date +%s)
     dur=$((end - start))
 
+    # Cap detection: any non-zero exit whose stderr matches a usage-cap
+    # pattern is treated as a cap hit, regardless of duration. (Sessions are
+    # multi-match, so the first cap-hit usually comes hours in — the old
+    # "duration < 60s" heuristic only fired on the *next* session that hit
+    # the cap immediately, wasting one session per cap window.)
     cap_hit=0
-    if (( rc != 0 )) && (( dur < 60 )); then
-        if grep -qiE 'usage limit|rate.?limit|usage cap|too many requests' "$stderr_file"; then
-            cap_hit=1
-        fi
+    if (( rc != 0 )) && grep -qiE 'usage limit|rate.?limit|usage cap|too many requests|claude.ai/upgrade' "$stderr_file"; then
+        cap_hit=1
     fi
     rm -f "$stderr_file"
 

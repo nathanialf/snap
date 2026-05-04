@@ -2,8 +2,17 @@
 
 Unattended week-long matching loop. Single-host, single-shepherd,
 shepherd-driven (not /loop). See `decomp/HEADLESS_PROMPT.md` for the
-per-iteration agent prompt and `tools/headless_run.sh` for the
-shepherd implementation.
+agent prompt and `tools/headless_run.sh` for the shepherd
+implementation.
+
+**Architecture: multi-match per session.** Each `claude --print`
+invocation is a long-lived matching session that lands as many cluster
+matches as it can, then exits cleanly when its 5h Claude usage cap is
+about to hit. The shepherd waits for the cap window to reset, then
+launches a fresh session. This amortizes the cold-start cost of
+loading CLAUDE.md + saved memory across many matches per session
+(Claude's auto-memory carries the IDO tricks, so the prompt does
+**not** mandate re-reading those files at session start).
 
 ## Quick reference
 
