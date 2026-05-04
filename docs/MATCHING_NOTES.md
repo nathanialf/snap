@@ -411,3 +411,21 @@ Need an additional 8-byte local that IDO won't strip. Maybe a buffer that's
 written-to-then-read-from later in the call chain, or a struct with a non-trivial
 init. Not obvious what the original source had. Permuter would likely find this
 quickly given the small search space.
+
+## func_80123074 (deferred — $a2/$a3 register-allocation choice)
+
+Sound-channel midi-control sibling: byte store via D_800968C8[arg0] = arg1
+gated by D_800968C4[arg0] != -1, then func_80032440(D_800968E4, byte_load).
+Got down to 4-instruction diff: register choice swap between $a2 and $a3.
+
+```
+base: or $a3,$a0,$0  ; andi $a2,$a1,0xff  ; sb $a2  ; addu $t2,$t1,$a3
+mine: or $a2,$a0,$0  ; andi $a3,$a1,0xff  ; sb $a3  ; addu $t2,$t1,$a2
+```
+
+`u8 arg1` K&R produces the spill + andi correctly (good progress vs the
+no-spill no-andi initial pass), but IDO assigns $a2 to whichever value is
+referenced FIRST in the body — and `D_800968C8[arg0] = arg1` reads arg0
+(for index) before arg1. Tried swapping eval order via `u8 v = (u8)arg1;
+D_800968C8[arg0] = v;` (lost the spill), `register u8`, K&R reorder. Permuter
+candidate.
