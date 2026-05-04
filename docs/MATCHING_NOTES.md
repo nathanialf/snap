@@ -228,30 +228,36 @@ Deferred as a single class — cracking one will unblock the others.
 See above (folded into the shared "IDO-picks-s0-over-stack-spill"
 cluster).
 
-### `func_80137860` / `func_80137890` / `func_8013CD50` — HW-reg bit tests
-Identical shape: read a hardware register, mask, return 1/0. Original
-allocates an empty 8-byte stack frame (no spills) and uses `$a0` as
-the register-value temp:
+### `func_80137860` / `func_80137890` / `func_8013CD50` — HW-reg bit tests (MATCHED)
+Resolved 2026-05-04. These are libultra `__osSpDeviceBusy`,
+`__osSiDeviceBusy`, and `__osDpDeviceBusy` (`lib/ultralib/src/io/sp.c`,
+`si.c`, `dp.c`). The empty 8-byte frame + `$a0` load shape comes from
+**-O1 + `register u32 stat`**, not from any header-inlined helper.
+
+Recipe:
+```c
+s32 func_8013xxxx(void) {
+    register u32 stat = *(volatile u32 *) 0xA404____;
+    if (stat & MASK) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
 ```
-lui  $t6, ...
-lw   $a0, ...           <-- into $a0 (a no-arg function!)
-addiu $sp, $sp, -8      <-- empty frame
-andi $t7, $a0, MASK
-beqz $t7, .L1
-nop
-b    .L2
-addiu $v0, 0, 1         <-- delay slot, true case
-.L1:
-or   $v0, 0, 0          <-- false case
-.L2:
-jr   $ra
-addiu $sp, $sp, 8       <-- frame teardown in delay
-```
-Tried `if (...) return 1; return 0;`, ternary form, dummy local. None
-produce both the empty stack frame AND the join-merge layout. The
-empty frame strongly suggests the original source used an inline
-helper from a header that left `$sp` adjustments behind, or compiled
-with a `livereg` directive we haven't replicated.
+Naming the source file `src/ultra_os_<name>.c` routes it through
+`CFLAGS_ULTRA_OS` (-O1) which is what triggers the `addiu $sp,-8 / +8`
+frame and the `lui/lw $a0` load order. The project's default `-O2` for
+this shape produces a frameless `lui/lw $v0` form that diverges by
+~10 bytes.
+
+Confirmed on:
+- `func_80137860` = `__osSpDeviceBusy` (SP_STATUS_REG, mask
+  `SP_STATUS_DMA_BUSY|SP_STATUS_DMA_FULL|SP_STATUS_IO_FULL` = 0x1C).
+- `func_80137890` = `__osSiDeviceBusy` (SI_STATUS_REG, mask
+  `SI_STATUS_DMA_BUSY|SI_STATUS_RD_BUSY` = 0x3).
+- `func_8013CD50` = `__osDpDeviceBusy` (DPC_STATUS_REG, mask
+  `DPC_STATUS_DMA_BUSY` = 0x100).
 
 ### `func_80119E78` — RNG-byte → call → mul.s scheduling
 14-insn function. Body: `func_8003D478(0, (u8)func_80037EE0()) *

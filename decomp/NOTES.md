@@ -238,12 +238,36 @@ prologue is `cond_branch $reg, label; sw $reg, offset($other)`
 and the source-side guess of "if/else where each branch sets the
 field differently" produces a `beql` mismatch.
 
+### libultra `__os{Sp,Si,Dp}DeviceBusy`-style HW-bit-test (MATCHED)
+Read a hardware status register, mask, return 1/0. Original allocates
+an empty 8-byte stack frame and loads via `$a0`. Recipe:
+```c
+s32 func_xxx(void) {
+    register u32 stat = *(volatile u32 *) 0xA40_____;
+    if (stat & MASK) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+```
+**Critical:** name the source file `src/ultra_os_<name>.c` to route it
+through `CFLAGS_ULTRA_OS` (-O1). The project default `-O2` produces
+a frameless `lui/lw $v0` form. The `register` keyword + `-O1` together
+trigger the empty-frame + `lw $a0` shape that matches the original
+libultra build. The function in `src/` keeps the `func_xxxxxxxx` name
+— no symbol_addrs entry needed. Confirmed on `func_80137860`,
+`func_80137890`, `func_8013CD50` (= `__osSpDeviceBusy`,
+`__osSiDeviceBusy`, `__osDpDeviceBusy`).
+
+Generalises to any other libultra `__os*Busy`-style helper sitting
+inside the main segment. Look for: 1-arg-less HW reg read, mask,
+boolean return, asm shows empty 8B frame + `$a0` as the temp + join-
+merge layout `b end / addiu $v0,1 // .else: or $v0,0,0 / .end: jr $ra
+addiu $sp,8`.
+
 ## "Tough nut" categories (defer until tooling helps)
 
-- **libultra-style `$a0`-dest hardware-status checks** with empty 8B
-  stack frame (`func_80137860/890/8013CD50`). Likely a different IDO
-  version or pragma. Empty `addiu $sp,-8/+8` with no spills suggests
-  an inline helper from a header.
 - **No-CSE on duplicate global lui** (`func_80137700`). IDO normally
   CSEs two `lui %hi(SYM)` of the same symbol; the original has two
   separate `lui` for the same address. Likely the original source
