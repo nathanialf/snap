@@ -28,8 +28,8 @@ bad=0
 for c in "$SRC_DIR"/*.c; do
     [[ ! -f "$c" ]] && continue
     fn="$(basename "$c" .c)"
-    # Only check files named like func_<addr>; skip ultra_*, boot_*, etc.
-    [[ ! "$fn" =~ ^func_[0-9A-Fa-f]{8}$ ]] && continue
+    # Skip the README/index files (no .c extension, but defensive).
+    [[ "$fn" == "README" ]] && continue
     if ! grep -q "/${fn}\.o" "$LD_SCRIPT"; then
         echo "check_yaml_match: $c not linked (yaml subsegment likely still 'asm')" >&2
         bad=1
