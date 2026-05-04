@@ -189,6 +189,21 @@ Don't chain into a fresh revisit when you're inside the
 end-of-session wrap-up window — revisits can take 30+ min and you'll
 get killed mid-flow.
 
+**Recognise libultra-shaped functions.** `lib/ultralib/` is cloned
+locally (gitignored, per the CLAUDE.md IP exception). It is **not**
+yet wired into the build as a matching target — that's tracked under
+`decomp/NOTES.md` "Ideas to invest in next". But when you see asm
+that looks like a libultra primitive — `cfc1`/`ctc1` on `$31`
+(FPU control), `mfc0`/`mtc0` on system regs, `cache` ops, OS message
+queue/event constants, `osSendMesg`-style argument shapes —
+**don't burn permuter cycles trying to coax IDO into matching it
+from a hand-written C body.** Defer with a `MATCHING_NOTES.md` entry
+that names the suspected libultra source (e.g.
+`ultralib/src/os/fpu/setfpccsr.c`) and the exact signature.
+Cracking the whole libultra range is a single workstream that will
+unlock dozens of these at once when someone takes it on; piecemeal
+attempts mostly waste budget.
+
 **Spawning a tooling subagent.** If you hit the same kind of friction
 3+ times in a session — same K&R sub-variant, same scheduling pattern,
 same yaml-split footgun — and a small targeted tool would unblock the

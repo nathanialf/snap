@@ -165,6 +165,18 @@ Revisit procedure:
 A revisit that doesn't crack still has value. The next session reads
 the updated notes.
 
+### Recognise libultra-shaped functions
+
+`lib/ultralib/` is cloned (gitignored, per CLAUDE.md IP exception)
+but **not yet wired into the build as a matching target**. When you
+see asm signalling a libultra primitive — `cfc1`/`ctc1` on `$31`,
+`mfc0`/`mtc0` on system regs, cache ops, osMesgQueue / osThread /
+osEvent constant patterns — defer immediately with a
+`MATCHING_NOTES.md` entry naming the suspected libultra source
+(e.g. `ultralib/src/os/fpu/setfpccsr.c`). Don't burn permuter
+cycles. Cracking the whole libultra range is a separate workstream
+that will unblock dozens of these at once.
+
 ### When to stop and exit cleanly
 
 Watch your usage cap (the rate-limit field is visible in the status
