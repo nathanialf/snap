@@ -92,28 +92,74 @@ the *next* revisit cheaper.
 ### Fresh iteration (default)
 
 1. `tools/find_siblings.py --unmatched | head -30` — highest-payoff
-   clusters first.
+   clusters first. **Sibling clusters are the unit of work, not single
+   functions.** A cluster's value comes from porting one matched
+   donor's C body across all siblings with target swaps; do this in a
+   single iteration, not one function per iteration.
 2. Filter out anything already listed in `docs/MATCHING_NOTES.md`'s
    tough-nut / deferred sections — those go through the revisit path.
-3. Prefer the smallest sibling cluster (1–3 functions) for one
-   iteration. Adjacent-c-c consolidation passes count as one iteration
-   too — pick those when nothing matchable stands out.
+3. Prefer a small sibling cluster (1–4 functions). Adjacent-c-c
+   consolidation passes are an alternative — pick those when nothing
+   matchable stands out.
 4. If `find_siblings` returns nothing actionable: do an adjacent-c-c
    consolidation pass per `STARTING_PROMPT.md` instructions. Exit clean
    when done.
 
-Per-iteration cap: **one** match attempt OR **one** revisit OR **one**
-consolidation pass OR **one** recovery. Don't chain.
+Per-iteration cap: **one cluster** (all matchable siblings in it) OR
+**one revisit** (one deferred entry) OR **one consolidation pass** OR
+**one recovery**. Land every sibling that matches before exiting; do
+**not** stop at the first match in a cluster. If the donor body lands
+on function A but fails on B in the same cluster, defer B specifically
+(document its failure in `MATCHING_NOTES.md`) and still commit A.
 
 ## 4. Match attempt
 
-Follow the per-cluster workflow from `STARTING_PROMPT.md`:
+### Toolkit (use these — do not reinvent)
 
-1. Edit `config/snap.us.yaml` to declare `[0xADDR, c, name]`.
-2. `make split` to migrate asm under `asm/nonmatchings/`.
-3. Write `src/<name>.c` (use saved-feedback-memory tricks first; check
-   `decomp/NOTES.md` for codegen patterns).
-4. `make` and inspect SHA-1.
+Run `--help` on any unfamiliar tool before first use in this session.
+
+- `tools/find_siblings.py --unmatched` — sibling-cluster finder
+  (target selection above).
+- `tools/find_matched_neighbors.py <addr>` — locate an already-matched
+  donor function whose C body can be ported onto an unmatched sibling.
+  **Use this whenever you've identified a cluster** — porting a
+  validated donor is the single highest-yield move.
+- `tools/scan_kr_signals.py <asm_path>` — K&R sub-variant histogram;
+  identifies which K&R shape (int spill, struct-by-value, byte-narrow,
+  float-promotion) the asm prologue indicates.
+- `tools/which_si_register.py <addr>` — `$s0..$s7` usage profile +
+  matched neighbours by register-overlap. Useful when no direct
+  sibling exists but a function with similar callee-saved usage does.
+- `tools/diff_objs.py <addr_a> <addr_b>` — twin-function diff with
+  prologue buckets; spot which slots changed between donor and target.
+- `tools/match_check.py 0xROM_OFFSET:0xSIZE` — per-function byte diff.
+  Note: **ROM offset, not VRAM** — silent false MATCH past EOF.
+- `tools/diagnose_match.py` — near-miss triage on the build artefact.
+- `tools/check_yaml_order.py --fix` — splat ordering fixer if you've
+  inserted a new `[addr, c, name]` line out of order.
+- `timeout 300 tools/permute_run.sh <vram> <size> <seed>` — permuter
+  driver (5-min budget on fresh iter, 1800s on revisit).
+
+### Per-cluster workflow
+
+For a cluster of N siblings:
+
+1. Use `find_matched_neighbors.py` against each cluster member to
+   surface a donor. If found, port the donor's C body — this is the
+   fastest path to landing N matches in one iteration.
+2. Edit `config/snap.us.yaml` to declare `[0xADDR, c, name]` for the
+   first sibling (or a shared filename if all N will live in one .c
+   per `STARTING_PROMPT.md` adjacent-merge rules).
+3. `make split` to migrate asm under `asm/nonmatchings/`.
+4. Write `src/<name>.c` for the first sibling (saved-feedback-memory
+   tricks first; `decomp/NOTES.md` for codegen patterns).
+5. `make` and inspect SHA-1. If MATCH on sibling #1, replicate the
+   shape for siblings #2..#N with target swaps. Each replica is a
+   `make` cycle — keep going until either every sibling matches or a
+   sibling resists.
+6. Resisting siblings: defer **just that one** (revert its yaml line,
+   delete its src/, write the failure mode into `MATCHING_NOTES.md`).
+   The siblings that did match still land in this iteration's commit.
 
 If the first build is MISMATCH after a reasonable best effort (saved
 memory tricks applied, a few obvious source-shape variations tried)
