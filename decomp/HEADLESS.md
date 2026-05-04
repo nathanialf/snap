@@ -5,6 +5,27 @@ shepherd-driven (not /loop). See `decomp/HEADLESS_PROMPT.md` for the
 per-iteration agent prompt and `tools/headless_run.sh` for the
 shepherd implementation.
 
+## Quick reference
+
+```sh
+# Launch
+nohup ./tools/headless_run.sh > /dev/null 2>&1 & disown
+
+# Stop (graceful — exits between iterations)
+kill $(cat decomp/.headless.pid)
+
+# Stop NOW (force-kill the in-flight claude; shepherd resumes next iter)
+pkill -f 'claude --print'
+
+# Stop hard (no grace, leaves nothing running)
+kill -9 $(cat decomp/.headless.pid) 2>/dev/null; pkill -9 -f 'claude --print' 2>/dev/null; rm -f decomp/.headless.pid
+
+# Status
+cat decomp/.headless.pid && ps -p $(cat decomp/.headless.pid) -o pid,etime,cmd
+tail -n 20 decomp/.headless_shepherd.log
+tail -n 20 decomp/RUN_LOG.md
+```
+
 ## Pre-flight
 
 Before launching for the first time:
