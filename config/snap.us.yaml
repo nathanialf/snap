@@ -443,7 +443,7 @@ segments:
       - [0x35E50, asm]
       - [0x35E70, c, ultra_os_func_80135270]
       - [0x35EB0, asm]
-      - [0x360D0, asm]
+      - [0x360D0, c, ultra_os_sprawdma]
       - [0x36160, asm]
       - [0x36210, c, ultra_os_func_80135610]
       - [0x36260, c, ultra_os_func_80135660]
