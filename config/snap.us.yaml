@@ -503,7 +503,7 @@ segments:
       - [0x39BD0, asm]
       - [0x39C40, asm]
       - [0x39E20, asm]
-      - [0x39FE0, asm]
+      - [0x39FE0, c, func_801393E0]
       - [0x3A060, asm]
       - [0x3A250, asm]
       - [0x3ADD0, asm]
