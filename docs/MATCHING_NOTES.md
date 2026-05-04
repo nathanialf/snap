@@ -249,6 +249,32 @@ empty frame strongly suggests the original source used an inline
 helper from a header that left `$sp` adjustments behind, or compiled
 with a `livereg` directive we haven't replicated.
 
+### `func_80119E78` — RNG-byte → call → mul.s scheduling
+14-insn function. Body: `func_8003D478(0, (u8)func_80037EE0()) *
+(1.0f / 256.0f)` — sample a u8 from `func_80037EE0` (a u64 RNG; same
+idiom matched on `func_80119E54`), pass to `func_8003D478` (returns
+f32), scale by 1/256. Five bytes of pure scheduling diff at the
+epilogue: base puts `lui $at; mtc1 $at,$f4; lw $ra; addiu $sp;
+mul.s $f0,$f0,$f4; jr $ra; nop` (mul.s before jr, nop in delay slot)
+while our IDO 7.1 emits `lw $ra; lui $at; mtc1; addiu $sp; jr $ra;
+mul.s` (mul.s in the delay slot of jr).
+
+Source variants tried: one-liner, intermediate `f32 v = ...` then
+return v * scale, cast-then-call. None move the mul.s out of the
+delay slot — IDO 7.1's scheduler aggressively fills jr's delay slot
+with the mul.s and we found no source-side knob to suppress that.
+
+Permuter ran ~22k iters @ speed 100, base score 120, plateau 105.
+Best candidate inserted `float new_var; float *new_var2 = &new_var;
+return *new_var2;` — forces a stack store/reload but doesn't
+change the mul.s scheduling. The 5-byte diff is below the permuter's
+mutation vocabulary from any clean ANSI seed.
+
+Suspect a compiler-version difference (IDO 7.1 sub-version or a
+`-O` variant) is the real driver, similar to the empty-stack-frame
+HW-bit-test trio. Defer; revisit when we identify the IDO patch
+level the original ROM used.
+
 ### `func_8010AD14` / `func_8010AD4C` — sound-API copy-and-cleanup pair
 Adapter shape: `func_800087AC(arg0, arg1)`, then
 `*(s32 *)((u8 *)arg0 + 0x28) = *(s32 *)(arg1 + 0x28)`,
