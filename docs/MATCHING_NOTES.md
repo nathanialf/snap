@@ -78,7 +78,19 @@ shape but not the byte sequence. Defer until a source-side trigger for
 "materialise constant once, reload from store-target for second use" is
 found.
 
-### `func_80138DB0` — conditional getter
+### `func_80138DB0` — conditional getter (MATCHED)
+Resolved 2026-05-04. Plain `if (D_80042D10 == 0) return 0; return
+D_80042D18;` matches when compiled at **-O1** via the
+`src/ultra_os_*.c` shim. The hoist of `lui $v0` into the delay slot
+that breaks the match under the project default (-O2) goes away at
+-O1.
+
+This function is probably a libultra getter (or thin wrapper around
+one) that was built with -O1 in the original tree, same as everything
+under `os/` in `lib/ultralib/makefiles/ido.mk`. Original deferred
+analysis below was correct about the hoist diff but missed the
+flag-level workaround.
+
 The original returns `D_80042D10 ? D_80042D18 : 0` but does **not**
 hoist the second `lui` past the branch:
 ```
