@@ -397,7 +397,7 @@ SECTIONS
         build/asm/36160.o(.text);
         build/src/ultra_os_func_80135610.o(.text);
         build/src/ultra_os_func_80135660.o(.text);
-        build/asm/362D0.o(.text);
+        build/src/ultra_os_func_801356D0.o(.text);
         build/src/func_80135720.o(.text);
         build/src/ultra_os_func_80135740.o(.text);
         build/asm/363B0.o(.text);
@@ -1005,7 +1005,7 @@ SECTIONS
         build/asm/36160.o(.data);
         build/src/ultra_os_func_80135610.o(.data);
         build/src/ultra_os_func_80135660.o(.data);
-        build/asm/362D0.o(.data);
+        build/src/ultra_os_func_801356D0.o(.data);
         build/src/func_80135720.o(.data);
         build/src/ultra_os_func_80135740.o(.data);
         build/asm/363B0.o(.data);
@@ -1612,7 +1612,7 @@ SECTIONS
         build/asm/36160.o(.rodata);
         build/src/ultra_os_func_80135610.o(.rodata);
         build/src/ultra_os_func_80135660.o(.rodata);
-        build/asm/362D0.o(.rodata);
+        build/src/ultra_os_func_801356D0.o(.rodata);
         build/src/func_80135720.o(.rodata);
         build/src/ultra_os_func_80135740.o(.rodata);
         build/asm/363B0.o(.rodata);
@@ -2224,7 +2224,7 @@ SECTIONS
         build/asm/36160.o(.bss);
         build/src/ultra_os_func_80135610.o(.bss);
         build/src/ultra_os_func_80135660.o(.bss);
-        build/asm/362D0.o(.bss);
+        build/src/ultra_os_func_801356D0.o(.bss);
         build/src/func_80135720.o(.bss);
         build/src/ultra_os_func_80135740.o(.bss);
         build/asm/363B0.o(.bss);
