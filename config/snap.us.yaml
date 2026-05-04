@@ -447,7 +447,7 @@ segments:
       - [0x366A0, asm]
       - [0x36C20, c, ultra_os_func_80136020]
       - [0x36C90, c, func_80136090]
-      - [0x36CA0, asm]
+      - [0x36CA0, c, ultra_os_func_801360A0]
       - [0x36D24, c, func_80136124]
       - [0x36D4C, asm]
       - [0x36D50, c, func_80136150]
