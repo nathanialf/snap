@@ -250,6 +250,9 @@ progress: | $(VENV)/.installed
 check-no-rom:
 	@./tools/check_no_rom.sh
 
+check-yaml-match:
+	@./tools/check_yaml_match.sh
+
 # ---- Cleanup -----------------------------------------------------------------
 
 clean:

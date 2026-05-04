@@ -77,6 +77,10 @@ exhausting these fallbacks is a session bug, not a finish line.
   it matched. Use `mips-linux-gnu-objdump -d build/src/<func>.o` to
   cross-check the compiled .c against the asm — they should be
   instruction-for-instruction identical.
+- `make check-yaml-match` (or `tools/check_yaml_match.sh`) — sweeps
+  `src/func_*.c` against `config/pokemonsnap.us.ld` and flags any .c
+  whose yaml entry was never flipped. Run this as a wrap-up sanity check
+  before committing a session's matches.
 - `tools/permute_run.sh <vram> <size> <seed.c>` — decomp-permuter
   driver; cracks operand-order / regalloc / scheduling near-misses.
   Seed file MUST be ANSI prototype style (the wrapper now pre-flights
