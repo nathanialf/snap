@@ -207,6 +207,37 @@ matches the C expression `a * b` → `fs=a, ft=b`. Sometimes it
 doesn't. If a near-miss has only the `mul.s` instruction differing
 by operand-order, defer it — this is decomp-permuter territory.
 
+### Unconditional assign hoisted into branch delay slot
+When the asm has a conditional branch whose **delay slot is a store
+using the same register the branch tested** (e.g.
+`beqz $a1, else; sw $a1, 0x8($a0)`), the C source has the assignment
+**hoisted out** of the if-else as an unconditional statement before
+the branch. IDO's scheduler swaps the unconditional store into the
+delay slot:
+
+```c
+arg0->next = arg1;          /* unconditional — fills delay slot */
+if (arg1 != 0) {
+    /* then-branch updates arg0->prev via arg1->prev */
+} else {
+    /* else-branch updates arg0->prev via bucket head */
+}
+```
+
+The trick works because the hoisted assignment is semantically
+acceptable in both branches: when `arg1 == 0`, the store writes
+NULL to the field, which is exactly what the else branch wants
+anyway (a freshly-inserted tail-node has no `next`). Putting the
+assignment inside the `if` instead causes IDO to emit `beql`
+(branch likely) with the else-branch's first instruction in the
+delay slot, shifting all subsequent bytes by one instruction.
+
+Confirmed across the linked-list-insert family
+(`func_8010848C`, `func_80108650`). Watch for this when the asm
+prologue is `cond_branch $reg, label; sw $reg, offset($other)`
+and the source-side guess of "if/else where each branch sets the
+field differently" produces a `beql` mismatch.
+
 ## "Tough nut" categories (defer until tooling helps)
 
 - **libultra-style `$a0`-dest hardware-status checks** with empty 8B
