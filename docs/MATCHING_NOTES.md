@@ -396,3 +396,18 @@ operand order to `mul.s` ends up swapped (`f6=arg0[17]_f, f10=arg1_f` vs base's
 encoding diverges. Tried: intermediate `f32 a, b` locals (worse), single `f32 t`
 intermediate (worse). No source-level construct found that forces IDO to defer
 the second `cvt.s.w` past the `ldc1`. Permuter candidate.
+
+## func_8012A640 (deferred — local placement)
+
+f32-arg variant of the screen-message-send family. Sends type=4 message with
+fval=arg1 to queue at arg0+0x14. Frame is -0x30, msg at sp+0x20. Tried:
+
+- ANSI prototype + 16-byte struct: frame -0x28 (8 bytes too small)
+- 24-byte struct (`s32 _wc[3]` padding): frame -0x30 ✓ but msg lands at sp+0x18 not sp+0x20
+- Added unused `s32 _pad[2]`: discarded by IDO, no effect on layout
+- K&R `f32 arg1`: promotes to double, completely diverges (ldc1 + cvt.d.s)
+
+Need an additional 8-byte local that IDO won't strip. Maybe a buffer that's
+written-to-then-read-from later in the call chain, or a struct with a non-trivial
+init. Not obvious what the original source had. Permuter would likely find this
+quickly given the small search space.
