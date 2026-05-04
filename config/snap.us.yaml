@@ -493,7 +493,7 @@ segments:
       - [0x399B0, asm]
       - [0x399E0, asm]
       - [0x39B50, asm]
-      - [0x39BA0, asm]
+      - [0x39BA0, c, ultra_os_settime]
       - [0x39BD0, asm]
       - [0x39C40, asm]
       - [0x39E20, asm]

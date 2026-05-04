@@ -443,7 +443,7 @@ SECTIONS
         build/asm/399B0.o(.text);
         build/asm/399E0.o(.text);
         build/asm/39B50.o(.text);
-        build/asm/39BA0.o(.text);
+        build/src/ultra_os_settime.o(.text);
         build/asm/39BD0.o(.text);
         build/asm/39C40.o(.text);
         build/asm/39E20.o(.text);
@@ -1042,7 +1042,7 @@ SECTIONS
         build/asm/399B0.o(.data);
         build/asm/399E0.o(.data);
         build/asm/39B50.o(.data);
-        build/asm/39BA0.o(.data);
+        build/src/ultra_os_settime.o(.data);
         build/asm/39BD0.o(.data);
         build/asm/39C40.o(.data);
         build/asm/39E20.o(.data);
@@ -1641,7 +1641,7 @@ SECTIONS
         build/asm/399B0.o(.rodata);
         build/asm/399E0.o(.rodata);
         build/asm/39B50.o(.rodata);
-        build/asm/39BA0.o(.rodata);
+        build/src/ultra_os_settime.o(.rodata);
         build/asm/39BD0.o(.rodata);
         build/asm/39C40.o(.rodata);
         build/asm/39E20.o(.rodata);
@@ -2245,7 +2245,7 @@ SECTIONS
         build/asm/399B0.o(.bss);
         build/asm/399E0.o(.bss);
         build/asm/39B50.o(.bss);
-        build/asm/39BA0.o(.bss);
+        build/src/ultra_os_settime.o(.bss);
         build/asm/39BD0.o(.bss);
         build/asm/39C40.o(.bss);
         build/asm/39E20.o(.bss);

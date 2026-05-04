@@ -100,22 +100,20 @@ not help (volatile semantics apply only to the `lw`, not the
 independent `lui`). Likely fix: a different IDO version or scheduler
 flag, or a pragma we haven't found yet.
 
-### `func_80138FA0` — two-global setter
-Original spills both args to the caller's arg-spill area on `$sp` and
-reloads through different temps before storing — without ever
-allocating a stack frame:
+### `func_80138FA0` — osSetTime (MATCHED)
+Resolved 2026-05-04. The function is libultra's `osSetTime`
+(`lib/ultralib/src/os/settime.c`):
+```c
+void osSetTime(OSTime time) {
+    __osCurrentTime = time;
+}
 ```
-sw $a0, 0(sp)          <-- spill into caller's spill area
-lw $t6, 0(sp)          <-- reload to t6
-sw $a1, 4(sp)          <-- same for arg1
-...
-sw $t6, %lo(D_800994C0)($at)
-sw $t7, %lo(D_800994C4)($at)
-```
-Tried: `volatile` locals (allocates own frame, wrong shape),
-`s32 *p = &arg0; p[0]/p[1]` (IDO collapses), `struct Pair p`
-(IDO spills extra dead stores). The original looks like K&R-style or a
-varargs decl. Worth revisiting once we identify the source style.
+The "spill-reload-without-frame" shape is just how IDO emits a u64
+argument-to-global assignment under -O1: the u64 arg arrives in
+$a0:$a1, gets spilled into the caller's positive spill slots, then
+reloaded into $t6/$t7 to store to `__osCurrentTime`. Compiled via the
+ultra_os_*.c shim (-O1). The pair `D_800994C0` (high) / `D_800994C4`
+(low) is `__osCurrentTime` viewed as u64.
 
 ### `func_80137700` — osCreateMesgQueue (MATCHED)
 Resolved 2026-05-04. The function is libultra's `osCreateMesgQueue`
