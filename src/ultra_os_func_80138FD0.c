@@ -15,7 +15,7 @@ typedef struct Foo_s {
 
 extern Foo *D_80042EB4;
 
-void func_80138FD0(s32 arg0, s32 arg1, s16 arg2) {
+void func_80138FD0(s32 arg0, s32 arg1, s32 arg2) {
     register u32 saveMask = func_80038D70();
     D_80042EB4->_w10 = arg0;
     D_80042EB4->_w14 = arg1;
