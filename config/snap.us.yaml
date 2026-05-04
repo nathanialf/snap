@@ -489,7 +489,7 @@ segments:
       - [0x38F70, c, ultra_os_setglobalintmask]
       - [0x38FC0, c, ultra_io_aisetfreq]
       - [0x39104, asm]
-      - [0x39110, asm]
+      - [0x39110, c, ultra_gu_normalize]
       - [0x391A0, asm]
       - [0x391B0, c, func_801385B0]
       - [0x391C0, asm]
