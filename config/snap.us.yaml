@@ -465,7 +465,7 @@ segments:
       - [0x380D4, asm]
       - [0x38130, asm]
       - [0x38180, asm]
-      - [0x38260, asm]
+      - [0x38260, c, memcpy]
       - [0x3828C, c, strlen]
       - [0x382B4, c, func_801376B4]
       - [0x38300, asm]
