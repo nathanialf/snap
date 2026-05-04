@@ -287,7 +287,7 @@ segments:
       - [0x1E5A4, c, func_8011D9A4]
       - [0x1E608, asm]
       - [0x1EB78, c, func_8011DF78]
-      - [0x1EBCC, asm]
+      - [0x1EBCC, c, func_8011DFCC]
       - [0x1EC28, c, func_8011E028]
       - [0x1EC8C, c, func_8011E08C]
       - [0x1ED00, asm]
