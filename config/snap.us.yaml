@@ -522,7 +522,7 @@ segments:
       - [0x3C960, asm]
       - [0x3D420, asm]
       - [0x3D5B0, asm]
-      - [0x3D850, asm]
+      - [0x3D850, c, ultra_os_func_8013CC50]
       - [0x3D8A0, asm]
       - [0x3D950, c, ultra_os_dp_busy]
       - [0x3D980, c, func_8013CD80]
