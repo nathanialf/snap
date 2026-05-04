@@ -477,7 +477,7 @@ segments:
       - [0x386F0, c, func_80137AF0]
       - [0x38708, asm]
       - [0x38710, asm]
-      - [0x38AE0, asm]
+      - [0x38AE0, c, ultra_os_gettime]
       - [0x38B70, asm]
       - [0x38FC0, asm]
       - [0x39110, asm]
