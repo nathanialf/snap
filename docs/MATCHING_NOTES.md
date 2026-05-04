@@ -230,6 +230,33 @@ empty frame strongly suggests the original source used an inline
 helper from a header that left `$sp` adjustments behind, or compiled
 with a `livereg` directive we haven't replicated.
 
+### `func_8010AD14` / `func_8010AD4C` — sound-API copy-and-cleanup pair
+Adapter shape: `func_800087AC(arg0, arg1)`, then
+`*(s32 *)((u8 *)arg0 + 0x28) = *(s32 *)(arg1 + 0x28)`,
+then `func_80008650(arg0[, *(s32 *)(arg1 + 0x8)])`. AD14 is 14 insns
+(1-arg cleanup), AD4C is 15 insns (2-arg cleanup). Body bytes match
+when arg1 is `s32` and explicitly passed to `func_80008650`. The
+remaining diff is purely prologue spill order: base spills `sw $a1`
+BEFORE the `jal func_800087AC` call and `sw $a0` IN the delay slot,
+but our IDO 7.1 emits the opposite order (`$a0` before, `$a1` in
+delay). Plus, AD4C reloads arg1 into `$v0` (base) vs `$a2` (built) —
+same family of regalloc divergence as the IDO-picks-s0 cluster, but a
+different choice point.
+
+Sibling matched pair `func_8010AC28/AC68` in the same neighborhood
+has `a0`-then-`a1` spill (matches our IDO), and matched
+`func_8010ACAC/ACE0` has `a1`-then-`a0` spill (like AD14/AD4C base).
+The trigger isn't arg1 type alone (both ACAC and AD use `s32 arg1`)
+nor arity of the second call (ACAC and AD14 both call 2-arg). The
+distinguishing factor between the AC and AD families is unclear.
+
+Permuter ran 24151 iters @ default speed, lowest score 25 (base 225).
+Best candidate inserted `s32 new_var = arg1; arg1++; arg1--;` to
+shake regalloc — got close but not matching.
+
+Deferred. Revisit when we crack the IDO-picks-s0 cluster — both
+likely come from the same regalloc heuristic difference.
+
 ## Ideas worth trying next
 
 - Decompile non-leaf functions whose callees can stay as asm — the
