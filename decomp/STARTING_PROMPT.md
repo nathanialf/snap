@@ -141,6 +141,78 @@ and commit nothing — you'll review its output before integrating.
   materials. ultralib is the only Nintendo-derived material allowed
   (per `CLAUDE.md` exception).
 
+## Planned: week-long headless autonomous run
+
+The user wants this decomp to be able to run headlessly for ~1 week
+unattended (the terminal may detach across PC restarts, but the server
+the agent runs on stays up). Not implemented yet — document the
+requirements here so the next session can build toward it.
+
+Target capability: kick off a self-driving matching loop, walk away
+for a week, come back to N more matches landed, no red builds, every
+defer documented.
+
+What's needed (none of this is wired yet):
+
+1. **Detached agent process.** Some flavour of `nohup` /
+   `systemd --user` / `tmux`-with-tmate-style-server hosting the
+   Claude Code session so it survives the terminal detaching. The
+   parent shell going away mustn't kill the loop.
+2. **Self-pacing scheduler.** A `/loop` invocation (or a CronCreate
+   routine) that fires the matching directive on a cadence the agent
+   itself controls — one match-attempt cycle per fire, with results
+   committed each time. ScheduleWakeup-style dynamic pacing fits this
+   better than a fixed cron interval, because attempt latency varies
+   wildly (some matches land in seconds, others permute for minutes).
+3. **Hard guardrails on autonomy.** No pushing to a remote, no
+   destructive ops, no ROM bytes leaked. The existing
+   `tools/check_no_rom.sh` + `ip-safety` CI invariants must be the
+   floor. Add a pre-commit hook (or run the check from inside each
+   loop iteration) so a malformed match attempt that accidentally
+   captured ROM data fails the iteration instead of polluting git
+   history.
+4. **State recovery on restart.** If the host reboots mid-iteration,
+   the next session must come back, read `git status` + `git log`,
+   notice any half-finished yaml carve / partial `src/<func>.c`,
+   revert it cleanly per the "Wrap-up" rules above, and resume
+   matching. The wrap-up rules already cover this conceptually but
+   they assume a graceful end-of-session — add explicit "resume from
+   crash" handling (idempotent revert of any orphaned in-progress
+   work).
+5. **Progress + health telemetry.** A periodic summary (every N
+   matches, or every 6h, whichever comes first) committed as part of
+   the loop run so the user can `git log` the whole week and see
+   what happened. Include: count of matches per cluster, deferred
+   functions added (with their failure-mode notes), permuter
+   plateaus, any build-red incidents and how they were recovered.
+   Optional: write to `decomp/RUN_LOG.md` rather than just commit
+   messages, so it's easy to skim.
+6. **Bounded permuter budgets.** Permuter currently runs until
+   stop-on-zero or kill. For a week-long run, each permuter attempt
+   should have a wall-clock budget (e.g. 5 min @ speed 100, defer if
+   no zero) so a single tough function can't eat days of compute
+   that other functions could have used.
+7. **Recovery from Claude session usage caps.** The 5h rolling cap
+   will trigger several times across a week. The wrap-up rules
+   handle landing the in-flight match, but the *next* invocation
+   needs to be auto-launched once the cap window resets — a
+   `/schedule` routine that wakes the agent every hour and no-ops if
+   already running, or starts fresh if not.
+8. **Resource limits.** Cap concurrent permuter workers to leave
+   headroom for the host. Cap disk usage (decomp-permuter `runs/`
+   can balloon — periodic cleanup of `output-*` directories on
+   matched targets).
+
+The pieces above span the harness layer (1, 2, 7), the matching
+workflow (3, 4, 6), and the operator-visibility layer (5, 8). Item 1
+is the unblocker — without a detached host process, none of the rest
+matters. Item 4 is the second-most-important because a single
+unhandled mid-iteration crash silently corrupts the working tree for
+the rest of the week.
+
+When the user is ready to enable this, the planning task is "wire
+items 1+4 first, validate with a 24h dry run, then add the rest."
+
 **End-of-session expectation:** build green at SHA-1
 `edc7c49cc568c045fe48be0d18011c30f393cbaf`, commits cleanly staged,
 auto-regenerated artefacts (`config/pokemonsnap.us.ld`,
