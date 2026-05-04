@@ -469,7 +469,7 @@ segments:
       - [0x37290, asm]
       - [0x37F50, asm]
       - [0x380B0, c, func_801374B0]
-      - [0x380D4, asm]
+      - [0x380D4, c, func_801374D4]
       - [0x38130, asm]
       - [0x38180, asm]
       - [0x38260, c, memcpy]
