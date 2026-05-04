@@ -429,3 +429,20 @@ referenced FIRST in the body — and `D_800968C8[arg0] = arg1` reads arg0
 (for index) before arg1. Tried swapping eval order via `u8 v = (u8)arg1;
 D_800968C8[arg0] = v;` (lost the spill), `register u8`, K&R reorder. Permuter
 candidate.
+
+## func_80135560 / __osSiRawStartDma (deferred — eager arg0 spill)
+
+Direct port of lib/ultralib/src/io/sirawdma.c (VERSION_J variant: SI_STATUS_REG
+& (DMA_BUSY|RD_BUSY) in place of __osSiDeviceBusy). Snap's symbols:
+__osDpDeviceBusy=80037860, osWritebackDCache=80034DB0, osVirtualToPhysical=80034D30,
+osInvalDCache=800377B0.
+
+Diff is at the function entry: base spills only $a1 (dramAddr) and copies
+arg0 to $a2 (`or $a2, $a0, $0`); mine spills both $a0 and $a1 eagerly. -O1
+ultra_os_*.c shim, ANSI prototype, with or without `register s32 direction`
+or `register u32 stat`. Adding the `stat` local pushed it to frame -0x28
+plus $s0 spill (totally diverged).
+
+Likely needs an alt source-side trick — `register void *dramAddr` to push
+dramAddr (not direction) to a callee-save register? Skipping for now; the
+match_check diff was clear enough that a permuter run should crack it.
