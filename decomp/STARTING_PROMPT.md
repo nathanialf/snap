@@ -14,6 +14,19 @@ unambiguous. Edit tools when you find errors and include them in your
 commits. Stage `src/`, `config/`, `tools/`, `decomp/`, `docs/`, and
 `README.md` as relevant. No AI co-author trailer.
 
+**Run until the Claude usage cap stops you. Do not stop early.** Hitting
+a "natural seam" (current cluster cleared, deferred-list felt thin,
+nothing obvious in `find_siblings`/`find_leaf_candidates`) is **not** a
+reason to stop. When that happens, broaden the search: scan a different
+ROM range for libultra-shaped helpers, retry an older deferred entry
+under newly-acquired leverage (e.g. -O1 via `src/ultra_os_*.c`),
+re-read recent matches' siblings for cross-pattern reuse, or pick a
+medium-size unmatched function and start it. Only stop when the
+session is genuinely about to be cut off mid-edit (see "Wrap-up" rules
+below) — at which point the wrap-up steps still apply. Reporting "I
+stopped because the obvious seam ran out" without exhausting these
+fallbacks is a session bug, not a finish line.
+
 **Read first** (in this order):
 
 1. `CLAUDE.md` — IP rules, ultralib exception, build commands, workflow.
