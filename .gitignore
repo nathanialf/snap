@@ -105,3 +105,4 @@ decomp/RUN_LOG.md
 decomp/.headless.pid
 decomp/.headless_shepherd.log
 decomp/.headless_next_run
+decomp/.headless_debug/

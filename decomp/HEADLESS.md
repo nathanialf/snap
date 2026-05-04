@@ -57,12 +57,28 @@ tail -n 5 decomp/.headless_shepherd.log        # "started ... iter #1 starting"
 
 ```sh
 tail -f decomp/RUN_LOG.md                      # per-iteration outcomes
-tail -f decomp/.headless_shepherd.log          # shepherd lifecycle / cap events
+tail -f decomp/.headless_shepherd.log          # shepherd lifecycle + heartbeats
+ls -1t decomp/.headless_debug/                 # per-iter verbose debug logs
+tail -f decomp/.headless_debug/iter_*.debug.log | head -1  # current iter live
 git log --since="24 hours ago" --oneline       # committed progress
 make progress                                  # refresh percentage tables on demand
 ```
 
-`decomp/RUN_LOG.md` is gitignored — it lives only on this host.
+The shepherd emits a heartbeat line to `.headless_shepherd.log` every
+30 seconds while a `claude --print` is in flight, of the form:
+
+```
+2026-05-04T03:01:09+00:00 shepherd: iter #2 alive @60s | <last debug line truncated to 200 chars>
+```
+
+The "last debug line" is from `decomp/.headless_debug/iter_NNNNN.debug.log`,
+which captures `claude -d "tool" --debug-file=…` output — i.e. the
+agent's tool calls as they happen. The shepherd keeps the last
+`HEADLESS_DEBUG_KEEP` (default 10) iterations' debug logs and rotates
+older ones at iteration start.
+
+`decomp/RUN_LOG.md` and `decomp/.headless_debug/` are gitignored — they
+live only on this host.
 
 ## Stop
 
@@ -121,6 +137,11 @@ nohup ./tools/headless_run.sh > /dev/null 2>&1 & disown
   better filesystem/git citizen.
 - `HEADLESS_CLAUDE` — path to the `claude` binary. Default: `claude`
   via `$PATH`.
+- `HEADLESS_HEARTBEAT` — seconds between heartbeat lines while a
+  `claude --print` is in flight. Default: `30`. Set to `0` to disable
+  (not recommended — silence is indistinguishable from hang).
+- `HEADLESS_DEBUG_KEEP` — number of recent per-iter debug logs to
+  retain under `decomp/.headless_debug/`. Default: `10`.
 
 ## Tough-nut handling
 

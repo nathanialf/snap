@@ -21,9 +21,12 @@ RUN_LOG="${PROJECT_ROOT}/decomp/RUN_LOG.md"
 SHEPHERD_LOG="${PROJECT_ROOT}/decomp/.headless_shepherd.log"
 PIDFILE="${PROJECT_ROOT}/decomp/.headless.pid"
 INSTALL_HOOKS="${PROJECT_ROOT}/tools/install_hooks.sh"
+DEBUG_DIR="${PROJECT_ROOT}/decomp/.headless_debug"
 
 CAP_SLEEP="${HEADLESS_CAP_SLEEP:-18000}"   # 5h conservative
 COOL_SLEEP="${HEADLESS_COOL_SLEEP:-60}"
+HEARTBEAT_SEC="${HEADLESS_HEARTBEAT:-30}"
+DEBUG_KEEP="${HEADLESS_DEBUG_KEEP:-10}"
 CLAUDE_BIN="${HEADLESS_CLAUDE:-claude}"
 
 ts()  { date -Iseconds; }
@@ -49,10 +52,17 @@ if [[ -x "$INSTALL_HOOKS" ]]; then
     "$INSTALL_HOOKS" >/dev/null
 fi
 
+mkdir -p "$DEBUG_DIR"
 echo "$$" > "$PIDFILE"
+
+# Track the in-flight claude PID + heartbeat PID so the trap can kill them.
+CLAUDE_PID=""
+HEARTBEAT_PID=""
 
 cleanup() {
     log "received signal, exiting between iterations"
+    [[ -n "$HEARTBEAT_PID" ]] && kill "$HEARTBEAT_PID" 2>/dev/null || true
+    [[ -n "$CLAUDE_PID" ]]    && kill "$CLAUDE_PID"    2>/dev/null || true
     rm -f "$PIDFILE"
     exit 0
 }
@@ -66,13 +76,45 @@ while true; do
     log "iter #${iter} starting"
     start=$(date +%s)
 
+    debug_file="${DEBUG_DIR}/iter_$(printf '%05d' "$iter").debug.log"
+    : > "$debug_file"
+
+    # Rotate: keep only the last $DEBUG_KEEP debug logs.
+    ls -1t "$DEBUG_DIR"/iter_*.debug.log 2>/dev/null \
+        | tail -n +$((DEBUG_KEEP + 1)) | xargs -r rm -f
+
+    # Backgrounded heartbeat: emit "alive" + last debug line every $HEARTBEAT_SEC.
+    (
+        hb_iter=$iter
+        hb_start=$start
+        while sleep "$HEARTBEAT_SEC"; do
+            now=$(date +%s)
+            dur=$((now - hb_start))
+            last_debug="$(tail -n 1 "$debug_file" 2>/dev/null | tr -d '\r' | head -c 200)"
+            if [[ -z "$last_debug" ]]; then last_debug="(no debug output yet)"; fi
+            printf '%s shepherd: iter #%d alive @%ds | %s\n' \
+                "$(ts)" "$hb_iter" "$dur" "$last_debug" >> "$SHEPHERD_LOG"
+        done
+    ) &
+    HEARTBEAT_PID=$!
+
     # Capture stderr separately so we can pattern-match for cap hits.
     stderr_file=$(mktemp)
     set +e
-    "$CLAUDE_BIN" --print "$(cat "$PROMPT_FILE")" \
-        >> "$SHEPHERD_LOG" 2> "$stderr_file"
+    "$CLAUDE_BIN" --print --debug "tool" --debug-file="$debug_file" \
+        "$(cat "$PROMPT_FILE")" \
+        >> "$SHEPHERD_LOG" 2> "$stderr_file" &
+    CLAUDE_PID=$!
+    wait "$CLAUDE_PID"
     rc=$?
     set -e
+
+    # Stop heartbeat now that claude has exited.
+    kill "$HEARTBEAT_PID" 2>/dev/null || true
+    wait "$HEARTBEAT_PID" 2>/dev/null || true
+    HEARTBEAT_PID=""
+    CLAUDE_PID=""
+
     cat "$stderr_file" >> "$SHEPHERD_LOG"
     end=$(date +%s)
     dur=$((end - start))
