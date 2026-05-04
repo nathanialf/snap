@@ -208,30 +208,45 @@ the first/second attempt with K&R int + `(u32)arg1 < 0x80U` (sound
 critical-section) — the regalloc twist is specific to 80123074's
 shape (no critical section, no clamp, just byte-write + call).
 
-### "IDO-picks-s0-over-stack-spill" cluster — `func_80135270` / `func_8013D820` / `func_80138F50` / `func_8013B2D0`
-Family of small libultra-style "lock + body + unlock" wrappers where
-the value returned from the middle call has to survive across the
-unlock call. The original IDO allocates `$s0` to hold that value
-(adding `sw $s0` / `lw $s0` to prologue/epilogue and an extra `or
-$s0,$v0; or $v0,$s0`), but our IDO 7.1 decides spill-`$v0`-to-local
-is cheaper and skips the s-reg allocation entirely. Net effect: a
-~4-insn frame-size + epilogue diff that no source-side tweak we've
-tried (plain code, `register`, K&R live-spill, ordering) reproduces.
+### "IDO-picks-s0-over-stack-spill" cluster (MATCHED)
+Resolved 2026-05-04. All four — `func_80135270`, `func_8013D820`,
+`func_80138F50`, `func_8013B2D0` — match at -O1 via the
+`src/ultra_os_*.c` shim. The s-register vs stack-spill divergence
+that defeated all previous attempts at -O2 just goes away at -O1.
 
-`func_80135270/D820` (16-insn): `func_80038D70()` → load
-`*(D_80042EBx + 4)` → `func_80038D90(saved)` → return loaded value.
-Permuter ran ~51k iters @ speed 100, never scored below 420 (base 465).
+Recipe for `func_80135270/D820` (16-insn `lock → load → unlock →
+return loaded value`):
+```c
+s32 func_xxxxxxxx(void) {
+    register u32 saveMask = func_80038D70();
+    s32 result = D_80042EBx[1];
+    func_80038D90(saveMask);
+    return result;
+}
+```
 
-`func_80138F50/13B2D0` (18-insn): `func_80035A30()` → spill 3 args →
-`result = func_8003B320(a,b,c)` (or `func_8003BB20`) → `func_80035A74()`
-→ return result. Same s0-allocation gap.
+Recipe for `func_80138F50/13B2D0` (18-insn `lock → call body →
+unlock → return body's result`). Critical: lock/unlock pair is
+**no-arg** and the saveMask from lock is *not* threaded through
+unlock; instead, `register s32 result` forces IDO to keep the body
+return value in `$s0` across the unlock call:
+```c
+s32 func_xxxxxxxx(s32 arg0, s32 arg1, s32 arg2) {
+    register s32 result;
+    func_80035A30();
+    result = func_8003B320(arg0, arg1, arg2);
+    func_80035A74();
+    return result;
+}
+```
 
-Other matched callers of these helper pairs (e.g. `func_80137B10`,
-`func_80124F54`) take the spill-to-stack path *and* match — so the
-behavior is definitely consistent between our IDO and the original
-IDO; the original's choice to use s0 in *these* specific functions
-must come from a source-level construct we haven't identified yet.
-Deferred as a single class — cracking one will unblock the others.
+The two cluster halves call different lock pairs:
+`func_80038D70/90` (used by 80135270/D820) takes/returns a saveMask;
+`func_80035A30/A74` (used by 80138F50/13B2D0) takes no args.
+
+Generalises a useful pattern: when the diff is "IDO picks $s0,
+ours uses stack spill," try `register` on the value that needs to
+survive across a call, plus `-O1` via the ultra_os shim.
 
 ### `func_80135270` / `func_8013D820` — int-mask-protected ptr deref
 See above (folded into the shared "IDO-picks-s0-over-stack-spill"
