@@ -114,7 +114,6 @@ SECTIONS
         build/src/func_8010888C.o(.text);
         build/src/func_801088B8.o(.text);
         build/src/func_80108930.o(.text);
-        build/src/func_80108960.o(.text);
         build/src/func_8010898C.o(.text);
         build/src/func_80108A04.o(.text);
         build/src/func_80108A30.o(.text);
@@ -719,7 +718,6 @@ SECTIONS
         build/src/func_8010888C.o(.data);
         build/src/func_801088B8.o(.data);
         build/src/func_80108930.o(.data);
-        build/src/func_80108960.o(.data);
         build/src/func_8010898C.o(.data);
         build/src/func_80108A04.o(.data);
         build/src/func_80108A30.o(.data);
@@ -1323,7 +1321,6 @@ SECTIONS
         build/src/func_8010888C.o(.rodata);
         build/src/func_801088B8.o(.rodata);
         build/src/func_80108930.o(.rodata);
-        build/src/func_80108960.o(.rodata);
         build/src/func_8010898C.o(.rodata);
         build/src/func_80108A04.o(.rodata);
         build/src/func_80108A30.o(.rodata);
@@ -1932,7 +1929,6 @@ SECTIONS
         build/src/func_8010888C.o(.bss);
         build/src/func_801088B8.o(.bss);
         build/src/func_80108930.o(.bss);
-        build/src/func_80108960.o(.bss);
         build/src/func_8010898C.o(.bss);
         build/src/func_80108A04.o(.bss);
         build/src/func_80108A30.o(.bss);
