@@ -97,3 +97,11 @@ tools/decomp-permuter/
 # --- Agent guidance (kept local; not part of the public project) ---
 CLAUDE.md
 .claude/
+
+# --- Headless run state (see decomp/HEADLESS.md) ---
+# Local-only telemetry / shepherd state for unattended matching loops.
+# RUN_LOG.md is parallel to git log; per-match progress lands in commits.
+decomp/RUN_LOG.md
+decomp/.headless.pid
+decomp/.headless_shepherd.log
+decomp/.headless_next_run

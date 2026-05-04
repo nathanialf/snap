@@ -181,82 +181,21 @@ and commit nothing — you'll review its output before integrating.
   materials. ultralib is the only Nintendo-derived material allowed
   (per `CLAUDE.md` exception).
 
-## Planned: week-long headless autonomous run
+## Headless mode
 
-The user wants this decomp to be able to run headlessly for ~1 week
-unattended (the terminal may detach across PC restarts, but the server
-the agent runs on stays up). Not implemented yet — document the
-requirements here so the next session can build toward it.
+A shepherd-driven unattended matching loop is implemented. See:
 
-Target capability: kick off a self-driving matching loop, walk away
-for a week, come back to N more matches landed, no red builds, every
-defer documented.
+- `decomp/HEADLESS.md` — operator runbook (launch, monitor, stop,
+  health checks, tunables, known limits).
+- `decomp/HEADLESS_PROMPT.md` — the per-iteration agent prompt fed to
+  each `claude --print` invocation.
+- `tools/headless_run.sh` — the `nohup`-able shepherd that drives
+  iterations, handles cap-hit cool-offs, and re-installs the IP-safety
+  pre-commit hook on each start.
 
-What's needed (none of this is wired yet):
-
-1. **Detached agent process.** Some flavour of `nohup` /
-   `systemd --user` / `tmux`-with-tmate-style-server hosting the
-   Claude Code session so it survives the terminal detaching. The
-   parent shell going away mustn't kill the loop.
-2. **Self-pacing scheduler.** A `/loop` invocation (or a CronCreate
-   routine) that fires the matching directive on a cadence the agent
-   itself controls — one match-attempt cycle per fire, with results
-   committed each time. ScheduleWakeup-style dynamic pacing fits this
-   better than a fixed cron interval, because attempt latency varies
-   wildly (some matches land in seconds, others permute for minutes).
-3. **Hard guardrails on autonomy.** No pushing to a remote, no
-   destructive ops, no ROM bytes leaked. The existing
-   `tools/check_no_rom.sh` + `ip-safety` CI invariants must be the
-   floor. Add a pre-commit hook (or run the check from inside each
-   loop iteration) so a malformed match attempt that accidentally
-   captured ROM data fails the iteration instead of polluting git
-   history.
-4. **Session-start sanity check.** Because we already commit eagerly
-   after every match, "crash recovery" collapses to a `git status`
-   read at the start of each loop iteration. If the tree is dirty:
-   either (a) re-run `make` and if MATCH, commit (the previous
-   session crashed *after* matching but *before* committing), or
-   (b) if MISMATCH or build-red, `git restore config/snap.us.yaml
-   && rm src/<orphaned>.c` (the previous session was mid-attempt
-   on a function that didn't match). No additional infrastructure
-   needed — git's atomicity + the eager-commit pattern is the
-   recovery mechanism. The session-start check is ~5 lines.
-5. **Progress + health telemetry.** A periodic summary (every N
-   matches, or every 6h, whichever comes first) committed as part of
-   the loop run so the user can `git log` the whole week and see
-   what happened. Include: count of matches per cluster, deferred
-   functions added (with their failure-mode notes), permuter
-   plateaus, any build-red incidents and how they were recovered.
-   Optional: write to `decomp/RUN_LOG.md` rather than just commit
-   messages, so it's easy to skim.
-6. **Bounded permuter budgets.** Permuter currently runs until
-   stop-on-zero or kill. For a week-long run, each permuter attempt
-   should have a wall-clock budget (e.g. 5 min @ speed 100, defer if
-   no zero) so a single tough function can't eat days of compute
-   that other functions could have used.
-7. **Recovery from Claude session usage caps.** The 5h rolling cap
-   will trigger several times across a week. The wrap-up rules
-   handle landing the in-flight match, but the *next* invocation
-   needs to be auto-launched once the cap window resets — a
-   `/schedule` routine that wakes the agent every hour and no-ops if
-   already running, or starts fresh if not.
-8. **Resource limits.** Cap concurrent permuter workers to leave
-   headroom for the host. Cap disk usage (decomp-permuter `runs/`
-   can balloon — periodic cleanup of `output-*` directories on
-   matched targets).
-
-The pieces above span the harness layer (1, 2, 7), the matching
-workflow (3, 4, 6), and the operator-visibility layer (5, 8). Item 1
-is the only real unblocker — without a detached host process, none
-of the rest matters. Items 3 and 6 (IP guardrails, permuter budget)
-are the next most important because they bound the blast radius of
-unattended runs. Item 4 used to look load-bearing but the
-eager-commit-after-each-match pattern already provides crash
-recovery for free; it just needs the trivial session-start check.
-
-When the user is ready to enable this, the planning task is "wire
-item 1 first, validate with a 24h dry run, then add 3+6 and the
-rest."
+STARTING_PROMPT (this file) remains the prompt for human-launched
+interactive sessions that match many functions per session. The
+wrap-up rules below apply to both modes.
 
 **End-of-session expectation:** build green at SHA-1
 `edc7c49cc568c045fe48be0d18011c30f393cbaf`, commits cleanly staged,
