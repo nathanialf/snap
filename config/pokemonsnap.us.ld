@@ -430,7 +430,8 @@ SECTIONS
         build/src/ultra_os_gettime.o(.text);
         build/asm/38B70.o(.text);
         build/src/ultra_os_setglobalintmask.o(.text);
-        build/asm/38FC0.o(.text);
+        build/src/ultra_io_aisetfreq.o(.text);
+        build/asm/39104.o(.text);
         build/asm/39110.o(.text);
         build/asm/391A0.o(.text);
         build/src/func_801385B0.o(.text);
@@ -1027,7 +1028,8 @@ SECTIONS
         build/src/ultra_os_gettime.o(.data);
         build/asm/38B70.o(.data);
         build/src/ultra_os_setglobalintmask.o(.data);
-        build/asm/38FC0.o(.data);
+        build/src/ultra_io_aisetfreq.o(.data);
+        build/asm/39104.o(.data);
         build/asm/39110.o(.data);
         build/asm/391A0.o(.data);
         build/src/func_801385B0.o(.data);
@@ -1624,7 +1626,8 @@ SECTIONS
         build/src/ultra_os_gettime.o(.rodata);
         build/asm/38B70.o(.rodata);
         build/src/ultra_os_setglobalintmask.o(.rodata);
-        build/asm/38FC0.o(.rodata);
+        build/src/ultra_io_aisetfreq.o(.rodata);
+        build/asm/39104.o(.rodata);
         build/asm/39110.o(.rodata);
         build/asm/391A0.o(.rodata);
         build/src/func_801385B0.o(.rodata);
@@ -2226,7 +2229,8 @@ SECTIONS
         build/src/ultra_os_gettime.o(.bss);
         build/asm/38B70.o(.bss);
         build/src/ultra_os_setglobalintmask.o(.bss);
-        build/asm/38FC0.o(.bss);
+        build/src/ultra_io_aisetfreq.o(.bss);
+        build/asm/39104.o(.bss);
         build/asm/39110.o(.bss);
         build/asm/391A0.o(.bss);
         build/src/func_801385B0.o(.bss);
