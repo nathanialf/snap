@@ -63,20 +63,38 @@ that resisted a quick match and what to investigate next.
 ### `func_8011E460` / `func_8011E5C0` — single-axis rotation matrices
 36-insn pair, both pure leaves: take `(f32 *dst, f32 angle)`, call
 sin (`func_80032A20`) and cos (`func_80038DE0`), then fill `dst[0..15]`
-as a Y-axis rotation (E5C0) or Z-axis rotation (E460). Plain
-sequential-store source matches every byte except for one IDO -O2 CSE
-trick: the original stores `1.0f` to the 4th-row diagonal slot
-(`dst[15]`) and then *re-reads* it as `lwc1 $f8, 0x3C($a0)` to use the
-same 1.0 for the 2nd-row (E5C0) / 3rd-row (E460) diagonal slot, instead
-of materialising the constant twice. Tried: sequential stores,
+as a Y-axis rotation (E5C0) or Z-axis rotation (E460). Original stores
+`1.0f` to the 4th-row diagonal slot (`dst[15]`) and re-reads it as
+`lwc1 $f8, 0x3C($a0)` to use the same 1.0 for the 2nd-row (E5C0) /
+3rd-row (E460) diagonal slot.
+
+**2026-05-04 progress (still deferred but much closer):** the
+volatile-reread trick triggers the `lwc1` reload at the right spot.
+Source pattern that gets us there:
+
+```c
+dst[15] = 1.0f;
+one = *(volatile f32 *) &dst[15];
+... (other stores) ...
+dst[10] = one;
+```
+
+With this the `swc1 $f6, 0x3C` / `lwc1 $f8, 0x3C` pair appears.
+Remaining diff is a 4-byte float-regalloc swap: base picks
+`$f4 = -sin / $f6 = 1.0` and `$f8` for the lwc1 reload; our build
+picks `$f4 = 1.0 / $f6 = -sin` and `$f12` for the reload. Same
+instructions, swapped FP registers — 4 byte differences total.
+
+Tried for the regalloc swap: explicit `ns = -s;` decl reorder
+ahead of `1.0`, intermediate `f32 one;` local, reorder of
+unrelated stores. None flipped the FP allocation.
+
+Earlier permuter from a worse seed plateaued at score 190 (vs base
+285). With this near-miss seed (~16 bytes diff vs original 285)
+the permuter should plateau much lower — re-run before further
+manual variations. Tried earlier and failed: sequential stores,
 reordered stores matching the asm flow, chained-assignment
-(`dst[5] = dst[15] = 1.0f`). All produced the stores but none of them
-emitted the lwc1 reload. Permuter ran ~11500 iters @ speed 100,
-plateaued at score 190 (vs base 285) — best candidates inserted dummy
-`if (1)` blocks and `dst[10] = (dst[11] = c)` chains that mirror the
-shape but not the byte sequence. Defer until a source-side trigger for
-"materialise constant once, reload from store-target for second use" is
-found.
+(`dst[5] = dst[15] = 1.0f`).
 
 ### `func_80138DB0` — conditional getter (MATCHED)
 Resolved 2026-05-04. Plain `if (D_80042D10 == 0) return 0; return

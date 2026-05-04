@@ -396,6 +396,7 @@ SECTIONS
         build/src/ultra_os_func_80135660.o(.text);
         build/asm/362D0.o(.text);
         build/src/func_80135720.o(.text);
+        build/src/func_80135720.o(.text);
         build/asm/36340.o(.text);
         build/asm/363B0.o(.text);
         build/asm/36470.o(.text);
