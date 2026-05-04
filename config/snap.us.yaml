@@ -370,7 +370,7 @@ segments:
       - [0x2B2A0, asm]
       - [0x2B770, c, func_8012AB70]
       - [0x2B7A0, c, func_8012ABA0]
-      - [0x2B7B8, asm]
+      - [0x2B7B8, c, func_8012ABB8]
       - [0x2B818, c, func_8012AC18]
       - [0x2B850, asm]
       - [0x2B89C, c, func_8012AC9C]
