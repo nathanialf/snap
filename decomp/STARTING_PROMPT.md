@@ -68,7 +68,15 @@ exhausting these fallbacks is a session bug, not a finish line.
 - `tools/diagnose_match.py` — near-miss triage.
 - `tools/check_yaml_order.py --fix` — splat ordering fixer.
 - `tools/match_check.py 0xROM_OFFSET:0xSIZE` — per-function byte diff
-  (note: ROM offset, not VRAM — silent false MATCH past EOF).
+  (note: ROM offset, not VRAM — silent false MATCH past EOF). **Also a
+  silent false MATCH if the yaml subsegment is still `asm` — the
+  asm-derived bytes match the baserom trivially regardless of whether
+  your `src/<func>.c` exists or compiles to anything sensible.** Always
+  flip the yaml entry from `asm` to `[addr, c, funcname]` BEFORE running
+  `make split && make`; if you forget, you'll commit a broken .c thinking
+  it matched. Use `mips-linux-gnu-objdump -d build/src/<func>.o` to
+  cross-check the compiled .c against the asm — they should be
+  instruction-for-instruction identical.
 - `tools/permute_run.sh <vram> <size> <seed.c>` — decomp-permuter
   driver; cracks operand-order / regalloc / scheduling near-misses.
   Seed file MUST be ANSI prototype style (the wrapper now pre-flights
