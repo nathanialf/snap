@@ -270,6 +270,8 @@ segments:
       - [0x1C470, asm]
       - [0x1C748, c, func_8011BB48]
       - [0x1C7C4, asm]
+      - [0x1CBAC, c, func_8011BFAC]
+      - [0x1CC24, asm]
       - [0x1D264, c, func_8011C664]
       - [0x1D2C8, asm]
       - [0x1D4F4, c, func_8011C8F4]
