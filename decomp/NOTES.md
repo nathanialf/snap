@@ -308,6 +308,19 @@ Notes / pitfalls:
   wrote, so output is IP-clean by construction. Still discard any
   candidate with suspicious symbol names / magic constants pulled from
   somewhere unexplained — same rule as any other contribution.
+- **The permuter cannot synthesise K&R-shaped codegen from an ANSI
+  seed.** pycparser rejects K&R, so the seed is always ANSI; the
+  permuter then mutates statements and locals but never re-introduces
+  the K&R-style spill-all-args prologue. If your closest near-miss is
+  a K&R variant (e.g. `unsigned char arg`) at N bytes diff, the
+  permuter's plateau from any ANSI seed will likely be *much worse*
+  than N bytes — the K&R prologue shape is below its mutation
+  vocabulary. Confirmed on `func_80123074` (K&R `unsigned char arg1`
+  → 4-byte regalloc swap; ANSI seed permuter plateaus at score 140
+  after 28k iters). Strategy when this happens: don't burn permuter
+  budget; instead try source-side flips on the K&R form
+  (param-decl reorder, explicit `s32 saved = arg0`, struct-typed
+  pointer cast) and live-debug.
 
 ## Ideas to invest in next
 

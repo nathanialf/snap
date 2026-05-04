@@ -168,10 +168,29 @@ the same regalloc swap:
   - built: `or $a2` + `andi $a3` + `sb $a3` + `addu …,$a2`
 
 Pure register-allocation flip — IDO picks $a2-low for what base
-picks $a3-low and vice versa. No source-side trigger found; this is
-permuter territory (decomp-permuter likely cracks it in <1k iters
-since the diff is 4 instructions of swapped allocation). The
-neighboring siblings `func_80122D54 / E20 / EEC / FD0` matched on
+picks $a3-low and vice versa. No source-side trigger found.
+
+Permuter attempted from ANSI seed (`s32 arg0, s32 arg1` with
+`s32 *home = &arg1` to mimic the K&R spill): 28k iters @ speed 100,
+4 workers, plateau score 140. Lowest-score candidate inserts
+`int new_var; new_var = arg1; D_800968C8[arg0] = new_var;` — extra
+local store but no regalloc change. The K&R 4-byte near-miss
+(starting score ~40 equivalent) is **not reachable** from any ANSI
+seed via the permuter's syntactic mutations: the K&R-char-spill
+behavior is a parser-level shape that ANSI source doesn't emit and
+the permuter can't synthesise. Permuting a K&R seed isn't possible
+either — `permute_run.sh`'s pycparser frontend rejects K&R syntax.
+
+Next angles to try (when revisiting):
+- A source-level trigger on the K&R form that flips regalloc:
+  reorder param decls (`unsigned char arg1, s32 arg0`?), make `arg0`
+  preservation explicit (`s32 saved = arg0`), or rewrite the call
+  site to swap which arg is held across.
+- A side-by-side build of one of the matched callers (e.g.
+  `func_80124F54`) that takes the spill-to-stack path and matches —
+  identify what differs at the source level.
+
+The neighboring siblings `func_80122D54 / E20 / EEC / FD0` matched on
 the first/second attempt with K&R int + `(u32)arg1 < 0x80U` (sound
 critical-section) — the regalloc twist is specific to 80123074's
 shape (no critical section, no clamp, just byte-write + call).
