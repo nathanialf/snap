@@ -154,6 +154,41 @@ visit, we now have the trick." Two complementary moves:
    right move on a new cluster is often "is this a member of an
    already-cracked family?" before "is this a brand-new shape?"
 
+**Revisit cadence (don't only chase easy clusters).** Periodically
+take a swing at a deferred / tough-nut entry from
+`docs/MATCHING_NOTES.md` — roughly **one revisit per ~6 fresh
+matches**, plus opportunistically when this session just landed a
+match that introduces new leverage (a new saved-memory trick, a
+fresh `decomp/NOTES.md` pattern, or a sibling-family crack near a
+deferred entry's address). The deferred backlog is where the next
+"single trick unlocks N functions" wins live, but only if sessions
+actually try them.
+
+Revisit procedure:
+
+1. Read the deferred / tough-nut sections of `MATCHING_NOTES.md` in
+   full. Pick the entry whose failure mode plausibly matches recent
+   leverage. Prefer entries with the lowest recorded permuter
+   plateau score — those are closest to cracking.
+2. Try 3–5 source-shape variations before falling back to the
+   permuter. Walk through every saved-memory trick that could
+   plausibly fit.
+3. If the permuter is needed, give it a longer **revisit budget**
+   (e.g. `timeout 1800 tools/permute_run.sh …` for 30 min) — the
+   per-cluster default is too short for a tough nut.
+4. Inspect the permuter's best-candidate `source.c` even on a
+   non-zero exit; the synthetic `if (1)` / chained-assignment /
+   dummy-temp shapes are hints about IDO's scheduling state.
+5. If matched: commit. If still deferred: update the entry's notes
+   with the new lowest plateau score and best-candidate structural
+   hints, and commit only that doc edit. **A revisit that doesn't
+   crack still has value** — the next session reads the updated
+   notes and starts cheaper.
+
+Don't chain into a fresh revisit when you're inside the
+end-of-session wrap-up window — revisits can take 30+ min and you'll
+get killed mid-flow.
+
 **Spawning a tooling subagent.** If you hit the same kind of friction
 3+ times in a session — same K&R sub-variant, same scheduling pattern,
 same yaml-split footgun — and a small targeted tool would unblock the
