@@ -301,6 +301,8 @@ segments:
       - [0x20974, asm]
       - [0x209C8, c, func_8011FDC8]
       - [0x20A08, asm]
+      - [0x20BD8, c, func_8011FFD8]
+      - [0x20C30, asm]
       - [0x217AC, c, func_80120BAC]
       - [0x217C4, asm]
       - [0x22ED8, c, func_801222D8]
