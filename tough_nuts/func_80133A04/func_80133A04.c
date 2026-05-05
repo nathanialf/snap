@@ -5,10 +5,11 @@ typedef struct Node {
 } Node;
 
 Node *func_80133A04(Node **arg0) {
-    Node *old;
-    Node *next;
-    old = *arg0;
-    next = old->next;
-    *arg0 = next;
+    struct Node *new_var;
+    Node *old = *arg0;
+    if (0) {
+    }
+    new_var = (*arg0)->next;
+    *arg0 = new_var;
     return old;
 }
