@@ -65,6 +65,20 @@ When to re-run `tools/gen_permuter_settings.py`:
 The script is idempotent: it only writes when content actually changes,
 so a stray re-run is harmless.
 
+- `tools/m2ctx.py src/foo.c` flattens a source file (all `#include`s
+  expanded inline, stock-cpp macros stripped) into `ctx.c` at the
+  project root. Use this when pasting into:
+    - **mips_to_c** — feed the asm + this `ctx.c` so the decompiler can
+      resolve struct fields, typedefs, and global declarations.
+    - **decomp.me** — paste the relevant function body into the editor
+      and the contents of `ctx.c` into the "Context" pane so the
+      scratch's IDO toolchain sees the same types we do.
+  Typical loop: pick a function, run `tools/m2ctx.py src/<file>.c`,
+  paste the asm + `ctx.c` into mips_to_c, iterate on the C in the local
+  tree against `make`'s SHA-1 check. Re-run m2ctx whenever the local
+  source or its includes change — the flattened blob is not
+  auto-regenerated.
+
 ## asm-differ + `expected/` workflow
 
 For functions that have already matched (i.e. there is a green-build
