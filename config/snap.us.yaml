@@ -345,6 +345,8 @@ segments:
       - [0x22F74, asm]
       - [0x22FF8, c, func_801223F8]
       - [0x23054, asm]
+      - [0x23178, c, func_80122578]
+      - [0x231F0, asm]
       - [0x23274, c, func_80122674]
       - [0x232BC, c, func_801226BC]
       - [0x2338C, asm]
