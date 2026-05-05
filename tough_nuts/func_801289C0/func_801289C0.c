@@ -1,18 +1,29 @@
 #include "common.h"
 
-extern s32 func_80029E80(void *queue, void *msg, s32 flag);
+typedef struct Foo {
+    u8 _0[0x14];
+    s32 _14;
+    u8 _18[0x24];
+    s32 _3C;
+    u8 *_40;
+} Foo;
 
-typedef struct {
+typedef struct Msg {
     s16 type;
-    s16 _pad;
-    s32 ptr;
-    s32 _unused0;
-    s32 _unused1;
+    s16 pad;
+    u8 *ptr;
+    s32 _8;
+    s32 _C;
+    s32 _10;
+    s32 _14;
 } Msg;
 
-void func_801289C0(s32 *arg0) {
+extern void func_80029E80(s32 *, Msg *, s32);
+
+void func_801289C0(Foo *arg0) {
     Msg msg;
+
     msg.type = 1;
-    msg.ptr = (s32) ((u8 *) arg0[16] + arg0[15] * 48);
-    func_80029E80((u8 *) arg0 + 0x14, &msg, 0);
+    msg.ptr = arg0->_40 + arg0->_3C * 48;
+    func_80029E80(&arg0->_14, &msg, 0);
 }
