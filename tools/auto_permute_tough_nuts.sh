@@ -40,6 +40,11 @@
 #   THREADS=N         pass -j N to permuter (default: leave unset)
 #   SKIP_MATCHED=1    skip subdirs whose function is already matched
 #                      (default: 1, set to 0 to retry matched ones)
+#   STOP_AT_SCORE=N   advance to next function once permuter has produced
+#                      an output with score <= N (default: 0 = match-only).
+#                      A score-50 result is hand-attackable: the wrapper
+#                      will kill permuter and move on so the operator can
+#                      review/promote the result manually.
 #
 # Output:
 #   Logs from each per-function run land in
@@ -56,6 +61,7 @@ ACTIVITY_LOG="${PROJECT_ROOT}/tools/decomp-permuter/auto_tough_nuts.log"
 SKIP_MATCHED="${SKIP_MATCHED:-1}"
 ITERATIONS="${ITERATIONS:-0}"   # 0 = infinite
 THREADS="${THREADS:-}"
+STOP_AT_SCORE="${STOP_AT_SCORE:-0}"  # 0 = match-only; >0 = advance once score <= N
 
 if [ ! -d "${TOUGH_DIR}" ]; then
     echo "ERROR: tough_nuts/ directory not found at ${TOUGH_DIR}" >&2
@@ -175,8 +181,35 @@ run_one() {
     # Ctrl-C still promotes whatever progress the permuter made before
     # propagating the interrupt and exiting.
     CURRENT_NAME="${name}"; CURRENT_SEED="${seed}"
+
+    # Optional STOP_AT_SCORE watchdog: poll runs/<name>/ for output-N-* dirs;
+    # once any with N <= STOP_AT_SCORE appears, kill the permuter and advance.
+    local watchdog_pid=""
+    local out_dir="${PROJECT_ROOT}/tools/decomp-permuter/runs/${name}"
+    if [ "${STOP_AT_SCORE}" -gt 0 ]; then
+        (
+            while sleep 5; do
+                if ls -d "${out_dir}"/output-*-* 2>/dev/null \
+                    | sed -nE 's|.*/output-([0-9]+)-.*|\1|p' \
+                    | sort -n | head -1 \
+                    | awk -v t="${STOP_AT_SCORE}" '{ exit !($1+0 <= t) }'; then
+                    log "  STOP_AT_SCORE: ${name} reached score <= ${STOP_AT_SCORE}, killing permuter"
+                    pkill -P "$$" -f "permute_run.sh" 2>/dev/null || true
+                    pkill -f "permuter.py.*${name}" 2>/dev/null || true
+                    exit 0
+                fi
+            done
+        ) &
+        watchdog_pid=$!
+    fi
+
     "${PERMUTE_RUN}" "${vram}" "${size}" "${seed}" "${extra[@]}" \
         >>"${ACTIVITY_LOG}" 2>&1 || rc=$?
+
+    if [ -n "${watchdog_pid}" ]; then
+        kill "${watchdog_pid}" 2>/dev/null || true
+        wait "${watchdog_pid}" 2>/dev/null || true
+    fi
     # rc==0 → match found. rc!=0 → no match yet (permuter exited naturally).
     # Either way, promote the best-scoring candidate into the seed for the
     # next pass so we don't re-do work.
@@ -185,10 +218,22 @@ run_one() {
     if [ "${rc}" -eq 0 ]; then
         log "MATCH ${name}"
         return 0
-    else
-        log "no-match ${name}  (Ctrl-C'd or permuter exited; seed updated to best so far)"
-        return 1
     fi
+
+    # If STOP_AT_SCORE is set, check whether we reached threshold and log it.
+    if [ "${STOP_AT_SCORE}" -gt 0 ] && [ -d "${out_dir}" ]; then
+        local best
+        best=$(ls -d "${out_dir}"/output-*-* 2>/dev/null \
+            | sed -nE 's|.*/output-([0-9]+)-.*|\1|p' \
+            | sort -n | head -1)
+        if [ -n "${best}" ] && [ "${best}" -le "${STOP_AT_SCORE}" ]; then
+            log "PLATEAU ${name}  (best score=${best}, advancing per STOP_AT_SCORE=${STOP_AT_SCORE})"
+            return 0
+        fi
+    fi
+
+    log "no-match ${name}  (Ctrl-C'd or permuter exited; seed updated to best so far)"
+    return 1
 }
 
 # Promote the lowest-score candidate from runs/<name>/output/ into the
