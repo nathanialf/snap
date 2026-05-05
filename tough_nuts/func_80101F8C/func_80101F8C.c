@@ -12,10 +12,12 @@ extern void func_80001D94(void);
 
 void func_80101F8C(void) {
     Item *p = D_80048730;
+    Item *q;
 
     while (p != 0) {
+        q = p->next;
         func_80032630(p->unk_4, 1, 0);
-        p = p->next;
+        p = q;
     }
     func_80001D94();
 }
