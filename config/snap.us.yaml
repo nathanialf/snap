@@ -180,7 +180,7 @@ segments:
       - [0xB7AC, c, func_8010ABAC]
       - [0xB828, c, func_8010AC28]
       - [0xB8AC, c, func_8010ACAC]
-      - [0xB914, asm]
+      - [0xB914, c, func_8010AD14]
       - [0xB988, c, func_8010AD88]
       - [0xB9A0, asm]
       - [0xC2F0, c, func_8010B6F0]
