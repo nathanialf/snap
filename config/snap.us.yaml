@@ -136,7 +136,7 @@ segments:
       - [0x8CA0, c, func_801080A0]
       - [0x8D18, asm]
       - [0x8DF0, c, func_801081F0]
-      - [0x8E1C, asm]
+      - [0x8E1C, c, func_8010821C]
       - [0x8ED8, c, func_801082D8]
       - [0x8F60, c, func_80108360]
       - [0x8F94, asm]
