@@ -447,22 +447,22 @@ Likely needs an alt source-side trick — `register void *dramAddr` to push
 dramAddr (not direction) to a callee-save register? Skipping for now; the
 match_check diff was clear enough that a permuter run should crack it.
 
-## func_8011E460 / func_8011E5C0 / func_8011E2B0 (deferred — FP register choice)
+## ~~func_8011E460 / func_8011E5C0 / func_8011E2B0~~ (RESOLVED 2026-05-05)
 
-Z/Y/multi-axis rotation matrix builders. Pattern: call sinf+cosf (func_80032A20,
-func_80038DE0), build 4x4 matrix, return. Got down to 4-byte register-choice
-diff (f4 vs f6 swap):
+All three rotation-matrix builders matched. Recipe (see saved memory
+`feedback_snap_rotation_matrix.md`):
 
-```
-base:  mtc1 at,$f6 ; neg.s $f4,$f14 ; swc1 $f6,0x3C(a0) ; swc1 $f4,0x10(a0)
-mine:  mtc1 at,$f4 ; neg.s $f6,$f14 ; swc1 $f4,0x3C(a0) ; swc1 $f6,0x10(a0)
-```
-
-Required `m[10] = *(volatile f32 *)&m[15]` to force the load-after-store dance
-(otherwise IDO reuses the const register for both stores). With that, only the
-register choice differs. Tried explicit `f32 ns = -s` local — no change.
-Permuter candidate. Likely all three rotation builders crack with the same
-trick once one does.
+1. Use `m[N] = *(volatile f32 *)&m[15]` (or whichever slot holds the 1.0
+   constant) to force the load-after-store dance — otherwise IDO reuses
+   the const register for both stores and skips the lwc1.
+2. Order `m[k] = -s` (the neg.s store) BEFORE `m[15] = 1.0f` in source —
+   this puts the neg.s result in `$f4` and the 1.0 constant in `$f6` to
+   match base. Reversing the source-line order swaps the registers.
+3. For the 2-axis version (E2B0), the four sin/cos locals must be
+   declared `f32 s1, s2, c1, c2;` (ANSI block-top decl) — IDO assigns
+   spill slots in declaration order, and this puts s1 at sp+0x2C,
+   c1 at sp+0x24, s2 at sp+0x28 to match base. Other orderings (s1,c1,s2,c2
+   or c1,s2,s1,c2) shifted the offsets and diverged.
 
 ## func_8010AD14 (deferred — register choice)
 
