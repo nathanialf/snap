@@ -20,6 +20,41 @@ that resisted a quick match and what to investigate next.
   one byte-level codegen difference; come back when patterns from other
   matches give us more leverage.
 
+## Permuter project settings (`permuter_settings.toml`)
+
+decomp-permuter reads `permuter_settings.toml` from the repo root. We
+generate that file from `tools/gen_permuter_settings.py` rather than
+hand-maintaining it: the IDO path is environment-dependent and the
+`[preserve_macros]` list should track project headers.
+
+The script lays down:
+
+- `compiler_type = "ido"`.
+- `[preserve_macros]` — regex → C-type-string. Curated patterns for
+  helper macros (`NULL`, `ARRAY_COUNT`, `ABS`, `CLAMP`, `MIN/MAX`,
+  `SQ`), libultra address-space conversions (`K0_TO_K1` etc., `IO_READ`
+  / `IO_WRITE`, `OS_K0_TO_PHYSICAL`), libultra time helpers
+  (`OS_CYCLES_TO_*`, `OS_*SEC_TO_CYCLES`), gbi.h microcode wrappers
+  (`gSP*` / `gsSP*` / `gDP*` / `gDma*` / `gMove*` / `gImm*`), and the
+  microcode field constants (`G_IM_*`, `G_TX_*`, `G_ML_*`, `G_MTX_*`,
+  etc., plus `_SHIFTL`/`_SHIFTR`).
+- `[decompme.compilers]` — maps the resolved IDO 7.1 cc path
+  (`$IDO_DIR/cc`, default `~/.local/share/ido-recomp/build/7.1/out/cc`)
+  to decomp.me's `ido7.1` compiler ID. A glob fallback
+  (`*/ido-recomp/build/7.1/out/cc`) covers other installs.
+
+When to re-run `tools/gen_permuter_settings.py`:
+
+- After moving the IDO toolchain (`IDO_DIR=` change, new `IDO_VERSION`,
+  fresh machine).
+- When new project-side macros land in `include/` that should stay
+  un-expanded under the permuter — add the pattern to
+  `_PRESERVE_PATTERNS` in the script and re-run.
+- After updating decomp-permuter itself, in case the schema changed.
+
+The script is idempotent: it only writes when content actually changes,
+so a stray re-run is harmless.
+
 ## asm-differ + `expected/` workflow
 
 For functions that have already matched (i.e. there is a green-build

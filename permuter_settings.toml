@@ -1,0 +1,56 @@
+# permuter_settings.toml — managed by tools/gen_permuter_settings.py.
+# Re-run that script to regenerate (e.g. after `IDO_DIR=` changes or new
+# project macros land in `include/`). Do not hand-edit; edits are lost.
+
+compiler_type = "ido"
+
+[preserve_macros]
+# Regex pattern -> C type the permuter pretends the macro returns.
+# Patterns are anchored by the permuter (`^(?:...)$`).
+"NULL" = "void *"
+"ARRAY_COUNT" = "u32"
+"ARRAY_COUNTU" = "u32"
+"ABS" = "s32"
+"CLAMP" = "s32"
+"CLAMP_MAX" = "s32"
+"CLAMP_MIN" = "s32"
+"SQ" = "s32"
+"MIN" = "s32"
+"MAX" = "s32"
+"K[01]_TO_(?:K[01]|PHYS)" = "u32"
+"PHYS_TO_K[01]" = "u32"
+"OS_K0_TO_PHYSICAL" = "u32"
+"OS_PHYSICAL_TO_K[01]" = "u32"
+"IO_READ" = "u32"
+"IO_WRITE" = "void"
+"OS_CYCLES_TO_[A-Z]+" = "u64"
+"OS_[NU]?SEC_TO_CYCLES" = "u64"
+"g[sS]?[A-Z][A-Za-z0-9_]*" = "void"
+"G_IM_(?:FMT|SIZ)_[A-Za-z0-9_]+" = "u32"
+"G_TX_[A-Z0-9_]+" = "u32"
+"G_ML_[A-Z0-9_]+" = "u32"
+"G_MTX_[A-Z0-9_]+" = "u32"
+"G_RM_[A-Z0-9_]+" = "u32"
+"G_CC_[A-Z0-9_]+" = "u32"
+"G_AC_[A-Z0-9_]+" = "u32"
+"G_ZS_[A-Z0-9_]+" = "u32"
+"G_TC_[A-Z0-9_]+" = "u32"
+"G_TF_[A-Z0-9_]+" = "u32"
+"G_TT_[A-Z0-9_]+" = "u32"
+"G_TL_[A-Z0-9_]+" = "u32"
+"G_TD_[A-Z0-9_]+" = "u32"
+"G_TP_[A-Z0-9_]+" = "u32"
+"G_PM_[A-Z0-9_]+" = "u32"
+"G_CD_[A-Z0-9_]+" = "u32"
+"G_CK_[A-Z0-9_]+" = "u32"
+"G_LOD_[A-Z0-9_]+" = "u32"
+"G_BL_[A-Z0-9_]+" = "u32"
+"G_SC_[A-Z0-9_]+" = "u32"
+"_SHIFTL" = "unsigned int"
+"_SHIFTR" = "unsigned int"
+
+[decompme.compilers]
+# Local IDO binary path -> decomp.me compiler ID. Wildcards allowed;
+# the permuter uses fnmatch on the full compiler[0] path.
+"/primary/home/n/.local/share/ido-recomp/build/7.1/out/cc" = "ido7.1"
+"*/ido-recomp/build/7.1/out/cc" = "ido7.1"
