@@ -380,6 +380,8 @@ segments:
       - [0x32654, c, func_80131A54]
       - [0x32690, c, func_80131A90]
       - [0x326B0, asm]
+      - [0x328FC, c, func_80131CFC]
+      - [0x32960, asm]
       - [0x32BB8, c, func_80131FC0]
       - [0x32BF8, asm]
       - [0x32D60, c, func_80132160]
