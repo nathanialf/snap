@@ -342,7 +342,7 @@ segments:
       - [0x21840, asm]
       - [0x22ED8, c, func_801222D8]
       - [0x22F00, c, func_80122300]
-      - [0x22F74, asm]
+      - [0x22F74, c, func_80122374]
       - [0x22FF8, c, func_801223F8]
       - [0x23054, c, func_80122454]
       - [0x230DC, asm]
