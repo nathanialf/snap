@@ -167,6 +167,8 @@ segments:
       - [0xA518, c, func_80109918]
       - [0xA71C, c, func_80109B1C]
       - [0xA77C, asm]
+      - [0xA894, c, func_80109C94]
+      - [0xA90C, asm]
       - [0xB010, c, func_8010A410]
       - [0xB090, asm]
       - [0xB340, c, func_8010A740]
