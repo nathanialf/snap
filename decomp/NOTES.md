@@ -285,6 +285,22 @@ addiu $sp,8`.
   K&R spill area when the byte needs to survive across a `jal`; the
   K&R declaration alone is enough to trigger this. Confirmed at -O2
   default flags.
+- **libultra `__d_to_ull` / `__f_to_ull` rodata placement**
+  (`func_8013D2D8`, `func_8013D378`). Both match in body shape when
+  compiled from `lib/ultralib/src/libc/llcvt.c` via a `#define` shim,
+  but reference `D_80044B90` / `D_80044B98` (the 2^63 fixup constant)
+  at fixed addresses inside the original ROM's main segment. IDO
+  emits the constant into our `.o`'s `.rodata` instead, which the
+  linker places at ~0x810FF400 (post-segment) — leading to a 4-byte
+  `lui $t7, hi(...)` mismatch on each function. To match these, the
+  named symbols `D_80044B90`/`_98` would need to be split as their
+  own data subsegments at those exact addresses, with the libultra
+  source modified to reference them by name (rather than emit inline
+  literal constants). Deferred until the libultra integration
+  workstream picks up rodata placement. Note: `__d_to_ll` (`8013D2A0`)
+  and `__f_to_ll` (`8013D2BC`) lack the fixup constant and would
+  match cleanly via the same `llcvt.c` include; they're left as asm
+  here only because we don't ship llcvt.c yet.
 
 ## decomp-permuter usage
 
