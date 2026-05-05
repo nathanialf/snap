@@ -478,3 +478,20 @@ mine:  lw $t6,0x1c($sp) ; lw $t7,0x28($t6) ; sw $t7,0x28($a0)
 
 Tried: ANSI prototype, K&R, `register void *arg1`. None coerce IDO
 into the $a1-reload pattern. Permuter candidate.
+
+## func_8011E720 family (deferred — dead-spill of $a3)
+
+5-arg degree-to-radian wrappers calling func_8001CEF8 with arg1
+scaled by D_80043DB4/180. Body matches except for ONE instruction:
+base emits `sw $a3, 0x2c($sp)` (dead spill of arg3 to caller-arg
+slot) that mine never produces. arg3 is passed unchanged through
+to the callee.
+
+Tried: ANSI `s32 arg3`, K&R (promotes f32 to double — diverges
+totally), `func_8001CEF8()` varargs decl (also promotes), `register s32`,
+intermediate `f32 r = ...` local. None coerce IDO into the dead
+spill.
+
+The 4 sibling functions (8011E720, E774, E7DC, E844, E8C0) all share
+this shape — cracking the trick once unlocks all of them. Permuter
+is the obvious next move.
