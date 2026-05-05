@@ -358,6 +358,8 @@ segments:
       - [0x24E28, asm]
       - [0x25B54, c, func_80124F54]
       - [0x25B78, asm]
+      - [0x25E1C, c, func_8012521C]
+      - [0x25E98, asm]
       - [0x26518, c, func_80125918]
       - [0x26538, asm]
       - [0x26838, c, func_80125C38]
