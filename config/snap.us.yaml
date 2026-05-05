@@ -240,8 +240,6 @@ segments:
       - [0x1A948, c, func_80119D48]
       - [0x1A960, asm]
       - [0x1A9B0, c, func_80119DB0]
-      - [0x1AA14, c, func_80119E14]
-      - [0x1AA54, c, func_80119E54]
       - [0x1AA78, asm]
       - [0x1AF60, asm]
       - [0x1B03C, c, vec3]
