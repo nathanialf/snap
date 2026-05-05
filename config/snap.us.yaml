@@ -237,6 +237,8 @@ segments:
       - [0x106FC, c, func_8010FAFC]
       - [0x10734, c, func_8010FB34]
       - [0x107C4, asm]
+      - [0x109A0, c, func_8010FDA0]
+      - [0x10A08, asm]
       - [0x1114C, c, func_8011054C]
       - [0x11184, asm]
       - [0x11C90, c, func_80111090]
