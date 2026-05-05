@@ -34,19 +34,23 @@ When you crack a tough nut, the *recipe* is often higher leverage than
 the function itself — codify it in `decomp/NOTES.md` and (if it
 generalises across ≥2 functions) promote to saved memory.
 
-**Run until the Claude usage cap stops you. Do not stop early.** Hitting
-a "natural seam" (current cluster cleared, deferred-list felt thin,
-nothing obvious in `find_siblings`/`find_leaf_candidates`) is **not** a
-reason to stop. When that happens, broaden the search using the full
-toolkit: re-run the finders with relaxed thresholds, scan adjacent
-ROM ranges for new shape families, retry an older deferred entry under
-newly-acquired leverage (e.g. -O1 via `src/ultra_os_*.c`, struct-by-
-value, K&R sub-variants — see saved memory), launch the permuter on
-a near-miss, or pick a medium-size unmatched function and start it.
-Only stop when the session is genuinely about to be cut off mid-edit
-(see "Wrap-up" rules below) — at which point the wrap-up steps still
-apply. Reporting "I stopped because the obvious seam ran out" without
-exhausting these fallbacks is a session bug, not a finish line.
+**Run until the Claude usage cap stops you. Do not stop early ever.**
+Hitting a "natural seam" (current cluster cleared, deferred-list felt
+thin, nothing obvious in `find_siblings`/`find_leaf_candidates`) is
+**not** a reason to stop. Neither is "five matches landed this iteration,
+that's a good place to pause" — there is no good place to pause that
+isn't the cap or a wrap-up trigger. When the obvious seam runs out,
+broaden the search using the full toolkit: re-run the finders with
+relaxed thresholds, scan adjacent ROM ranges for new shape families,
+retry an older deferred entry under newly-acquired leverage (e.g. -O1
+via `src/ultra_os_*.c`, struct-by-value, K&R sub-variants — see saved
+memory), launch the permuter on a near-miss, or pick a medium-size
+unmatched function and start it. Only stop when the session is
+genuinely about to be cut off mid-edit (see "Wrap-up" rules below) —
+at which point the wrap-up steps still apply. Reporting "I stopped
+because the obvious seam ran out" or "I stopped because momentum
+felt right" without exhausting these fallbacks is a session bug, not
+a finish line.
 
 **Read first** (in this order):
 
