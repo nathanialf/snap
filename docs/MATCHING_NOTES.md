@@ -20,6 +20,68 @@ that resisted a quick match and what to investigate next.
   one byte-level codegen difference; come back when patterns from other
   matches give us more leverage.
 
+## asm-differ + `expected/` workflow
+
+For functions that have already matched (i.e. there is a green-build
+`.o` we can use as a baseline), `asm-differ` gives a much nicer
+inner-loop than `match_check.py` — it understands branch targets,
+symbol names, and side-by-side register diffs.
+
+Setup pieces (already wired):
+- `tools/make_expected.sh` — snapshot the current `build/` tree into
+  `expected/build/` after a green build (verifies SHA-1 matches the
+  baserom before snapshotting; warns and continues otherwise).
+- `diff_settings.py` (project root) — points asm-differ at
+  `baserom.us.z64` / `build/pokemonsnap.us.z64` / `build/...map` and
+  the `expected/build/` snapshot.
+- `lib/ultralib/tools/asm_differ/diff.py` — the differ itself
+  (bundled with ultralib; deps `watchdog`, `colorama`,
+  `python-Levenshtein`, `cxxfilt` already in `.venv/`).
+- `expected/` is gitignored.
+
+Snapshot policy:
+- After every green `make` (SHA-1 OK), run `tools/make_expected.sh`.
+  Cheap, idempotent, ~1 second.
+- Re-snapshot whenever a NEIGHBOURING function gets matched — the
+  `.o` for the file you're working in changes, and asm-differ
+  compares object files, so a stale neighbour shows up as spurious
+  diff in your function.
+
+Inner loop (matched function regression / verifying a re-edit):
+
+    .venv/bin/python lib/ultralib/tools/asm_differ/diff.py -mwo func_NAME
+
+Flag breakdown:
+- `-o` diff `.o` files (preserves symbol names; recommended).
+- `-m` auto-`make` the object before diffing.
+- `-w` watch the source for saves and re-diff on every change.
+  Pair with `-3` for a three-way (target / current / previous-edit)
+  view that highlights which lines your last edit moved.
+
+One-shot (no watch, e.g. for CI-style scripting):
+
+    .venv/bin/python lib/ultralib/tools/asm_differ/diff.py -o func_NAME --no-pager --format plain
+
+A clean match prints `current_score: 0` (visible via `--format=json`)
+and shows no `>` markers on any row.
+
+**Caveat — tough nuts have no baseline.** asm-differ's
+`expected_dir` mode compares `build/<obj>` against
+`expected/build/<obj>`. For a function that has *never* matched, the
+target `.o` in `expected/build/` is itself wrong (it was produced
+from non-matching C). The differ will show "no diff" because both
+sides are equally wrong. For tough-nut iteration, use
+`tools/quick_diff.sh func_NAME` instead — it disassembles your fresh
+`.o` and side-by-side diffs against the canonical
+`asm/<addr>.s` (the splat-emitted truth from the ROM), which is the
+right baseline for never-matched code.
+
+Rule of thumb:
+- Function lives in `src/` and currently matches → asm-differ + `-mwo`
+  is the right loop.
+- Function lives in `tough_nuts/<name>/` (or has a non-matching stub
+  in `asm/nonmatchings/`) → `tools/quick_diff.sh` is the right loop.
+
 ## Confirmed match patterns
 
 - **Plain getter** (`extern T D_xxx; return D_xxx;`) matches when the
