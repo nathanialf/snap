@@ -495,3 +495,20 @@ spill.
 The 4 sibling functions (8011E720, E774, E7DC, E844, E8C0) all share
 this shape — cracking the trick once unlocks all of them. Permuter
 is the obvious next move.
+
+## func_8011FE08 / func_8011FE88 (deferred — $t8 vs $t9 in count-reload)
+
+Pair of relocator functions (FE08 walks an entries[] array, FE88
+adds a "next" pointer + visited flag check before the loop). The
+loop body matches in shape and fields. Got down to a single
+register-name diff: the count-reload `lh $tN, 0(arg0)` picks
+$t9 in base, $t8 in mine (FE08) — and an analogous $t2 vs $t1
+swap (FE88).
+
+Both use callee-save registers s0-s3 (FE08) / s0-s4 (FE88) for
+the loop state. Tried for FE88: combine `arg0->next = ... ; call(arg0->next)`
+into a single statement. Got the addu fold but the count-reload
+register choice didn't budge.
+
+These are downstream of an unmatched register-allocation pattern.
+Permuter or family-recipe codification likely cracks both.
