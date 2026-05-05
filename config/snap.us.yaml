@@ -557,7 +557,7 @@ segments:
       - [0x3DE98, asm]
       - [0x3DEA0, asm]
       - [0x3E014, c, ultra_libc_ll_to_d]
-      - [0x3E044, asm]
+      - [0x3E0A8, asm]
       - [0x3E0B0, asm]
       - [0x3E3F0, c, ultra_os_ai_busy]
       - [0x3E420, c, ultra_os_func_8013D820]
