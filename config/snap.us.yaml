@@ -377,6 +377,8 @@ segments:
       - [0x29610, asm]
       - [0x29D60, c, func_80129160]
       - [0x29D68, asm]
+      - [0x2A0D4, c, func_801294D4]
+      - [0x2A140, asm]
       - [0x2A810, c, func_80129C10]
       - [0x2A8D0, asm]
       - [0x2A970, asm]
