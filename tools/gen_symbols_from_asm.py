@@ -49,8 +49,22 @@ def collect_defined() -> set[str]:
                 text = c.read_text(errors="replace")
             except OSError:
                 continue
-            for m in C_DEF_RE.finditer(text):
-                defined.add(f"{m.group(1)}{m.group(2).upper()}")
+            # Only treat lines that are NOT extern declarations and NOT
+            # plain references (RHS of assignment, args to a call) as
+            # definitions. A real C definition has the symbol preceded
+            # by a type/qualifier on the same line — never `extern`,
+            # never as the RHS of `=`, `,`, `(`, etc.
+            for line in text.splitlines():
+                if "extern" in line:
+                    continue
+                for m in C_DEF_RE.finditer(line):
+                    # Reject if the char immediately before the name (after
+                    # trimming whitespace) is one of `= , ( ;`, since that
+                    # marks usage rather than definition.
+                    pre = line[: m.start()].rstrip()
+                    if pre and pre[-1] in "=,(;":
+                        continue
+                    defined.add(f"{m.group(1)}{m.group(2).upper()}")
     return defined
 
 
@@ -74,6 +88,23 @@ def main() -> int:
             # Use the captured hex as the address. Pad to 32 bits.
             addr = m.group(2).upper().zfill(8)
             referenced.setdefault(name, addr)
+
+    # Also scan C sources: a function pointer like func_80006E24 may be
+    # referenced only from C (e.g. as a callback assigned to a global) and
+    # never appear in any .s file. Without this scan the linker fails to
+    # resolve such symbols.
+    if SRC_DIR.is_dir():
+        for c in SRC_DIR.rglob("*.c"):
+            try:
+                text = c.read_text(errors="replace")
+            except OSError:
+                continue
+            for m in REF_RE.finditer(text):
+                name = f"{m.group(1)}{m.group(2).upper()}"
+                if name in defined:
+                    continue
+                addr = m.group(2).upper().zfill(8)
+                referenced.setdefault(name, addr)
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w") as f:
