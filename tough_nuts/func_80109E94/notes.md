@@ -1,54 +1,20 @@
-# func_80109E94 — append node to child-list
+# func_80109E94 — append-to-tail of arg0->_10 sibling chain
 
-**ROM offset:** `0xAA94` **size:** `0x98` (38 instructions)
-**VRAM:** `0x80109E94`
+Allocates via func_80008A30(arg0), splices the new node onto the
+end of arg0->_10's `->_8` sibling chain (or sets it as the head if
+empty), wires up _4/_8/_10/_14 (parent)/_50, then calls
+func_80009D0C(new).
 
-## Behaviour
-Sibling of func_80109E20. Allocate a new Node via `func_80008A30(arg0)`,
-append to the child-list at `arg0->_10`. Walk via `_8` (prev) field
-to the end before linking.
+## Diff
 
-```c
-Node *func_80109E94(Node *arg0, void *arg1) {
-    Node *n = func_80008A30(arg0);
-    Node *cur = arg0->_10;
-    if (cur != 0) {
-        while (cur->prev != 0) cur = cur->prev;
-        cur->prev = n;
-        n->next = cur;
-    } else {
-        arg0->_10 = n;
-        n->next = 0;
-    }
-    n->_14 = arg0;
-    n->_10 = 0;
-    n->prev = 0;
-    n->_4 = arg0->_4;
-    n->_50 = (s32)arg1;
-    func_80009D0C(n);
-    return n;
-}
-```
-
-## What's matching (when grouped with 80109E20)
-- jal func_80008A30 + delay sw $a0
-- bnel/beql for the cur != 0 / cur == 0 dispatch
-- Walk-to-end loop with bnel + lw in delay (peek-ahead idiom)
-- Final field-init sequence (with proper interleaving from sibling 80109E20 lesson)
-
-## Remaining diff (regalloc swap + scheduling)
-**$a0 vs $a2 for cur** — base allocates cur to $a2, built picks $a0.
-After my source's `if (cur != 0)` inversion to fix the beql direction,
-the regalloc still doesn't match (different choice of which arg-reg to
-hold the cur pointer).
-
-## Variants tried
-- `if (cur == 0) { ... } else { ... }`: bnel emitted (wrong)
-- `if (cur != 0) { ... } else { ... }`: beql emitted (right) but
-  regalloc still off
+The body has the right calls + field writes, but the chain-walk
+reg routing differs: base routes `cur` through `a0` and the
+"check head->_8" case through delay slots; built picks different
+t-regs and the sub-case branch shape doesn't peel quite the same
+way.
 
 ## Permuter hint
-Pure regalloc once the if-condition is `!= 0` instead of `== 0`.
-Permuter should crack quickly. May benefit from the same field-write
-ordering trick that worked on the matched func_80109E20 sibling
-(`n->_14` before `n->_10`).
+
+Try the goto-out form used in func_80108024 — `do { if (cur->_8 == 0)
+goto found; cur = cur->_8; } while (1); found: ...` — to coax the
+beql+delay-slot peeling pattern.

@@ -1,35 +1,43 @@
 #include "common.h"
 
 typedef struct Node {
-    u8 pad0[4];
-    void *field_4;
-    struct Node *prev;
-    struct Node *next;
-    struct Node *field_10;
-    void *field_14;
+    s32 _0;
+    s32 _4;
+    struct Node *_8;
+    struct Node *_C;
+    struct Node *_10;
+    struct Node *_14;
+    s32 _18[14];
+    s32 _50;
 } Node;
 
 extern Node *func_80008A30(Node *);
 extern void func_80009D0C(Node *);
 
-Node *func_80109E94(Node *arg0, void *arg1) {
-    Node *n = func_80008A30(arg0);
-    Node *cur = arg0->field_10;
-    if (cur != 0) {
-        while (cur->prev != 0) {
-            cur = cur->prev;
-        }
-        cur->prev = n;
-        n->next = cur;
+Node *func_80109E94(Node *arg0, s32 arg1) {
+    Node *new;
+    Node *cur;
+
+    new = func_80008A30(arg0);
+    cur = arg0->_10;
+    if (cur == 0) {
+        arg0->_10 = new;
+        new->_C = 0;
     } else {
-        arg0->field_10 = n;
-        n->next = 0;
+        if (cur->_8 != 0) {
+            cur = cur->_8;
+            while (cur->_8 != 0) {
+                cur = cur->_8;
+            }
+        }
+        cur->_8 = new;
+        new->_C = cur;
     }
-    n->field_14 = arg0;
-    n->field_10 = 0;
-    n->prev = 0;
-    n->field_4 = arg0->field_4;
-    *(s32 *) ((u8 *) n + 0x50) = (s32) arg1;
-    func_80009D0C(n);
-    return n;
+    new->_14 = arg0;
+    new->_10 = 0;
+    new->_8 = 0;
+    new->_4 = arg0->_4;
+    new->_50 = arg1;
+    func_80009D0C(new);
+    return new;
 }
