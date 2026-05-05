@@ -196,6 +196,7 @@ segments:
       - [0xCE20, c, func_8010C220]
       - [0xCE74, asm]
       - [0xD150, asm]
+      - [0xD1B4, c, func_8010C5B4]
       - [0xD2C0, c, func_8010C6C0]
       - [0xD304, c, func_8010C704]
       - [0xD3CC, c, func_8010C7CC]
