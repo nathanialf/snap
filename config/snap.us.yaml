@@ -385,6 +385,8 @@ segments:
       - [0x266A4, asm]
       - [0x26838, c, func_80125C38]
       - [0x268A4, asm]
+      - [0x26AD0, c, func_80125ED0]
+      - [0x26B24, asm]
       - [0x26D40, c, func_80126140]
       - [0x26D70, c, func_80126170]
       - [0x26DB8, asm]
