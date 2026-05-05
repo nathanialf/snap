@@ -463,3 +463,18 @@ Required `m[10] = *(volatile f32 *)&m[15]` to force the load-after-store dance
 register choice differs. Tried explicit `f32 ns = -s` local — no change.
 Permuter candidate. Likely all three rotation builders crack with the same
 trick once one does.
+
+## func_8010AD14 (deferred — register choice)
+
+3-arg-style sibling of func_8010ACAC. After func_800087AC call: reload
+arg1 + read its 0x28 field, copy to arg0+0x28, then func_80008650(arg0).
+Got down to 3-instruction register-choice diff: base reloads arg1 into
+$a1 and uses $t6 for the 0x28-load; mine reloads to $t6 and uses $t7.
+
+```
+base:  lw $a1,0x1c($sp) ; lw $t6,0x28($a1) ; sw $t6,0x28($a0)
+mine:  lw $t6,0x1c($sp) ; lw $t7,0x28($t6) ; sw $t7,0x28($a0)
+```
+
+Tried: ANSI prototype, K&R, `register void *arg1`. None coerce IDO
+into the $a1-reload pattern. Permuter candidate.
