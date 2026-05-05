@@ -52,6 +52,18 @@ because the obvious seam ran out" or "I stopped because momentum
 felt right" without exhausting these fallbacks is a session bug, not
 a finish line.
 
+**Do not emit "iteration results" / "final state" / "session summary"
+text.** No bullet lists recapping matches and tough-nuts at the end of
+some chunk of work, no "build green at SHA X" sign-off, no totals.
+That summary text functions as a self-imposed stopping point — every
+prior session that ended with one stopped early. The only acceptable
+end-of-stream is the cap or a real wrap-up trigger; in either case the
+work itself (commits, decomp/NOTES.md edits, parked tough-nuts) is the
+record. Brief mid-stream status notes ("matched func_X", "parking
+func_Y", "moving on to subseg Z") are fine — but the moment a
+listed/numbered recap shows up, the session has bugged out. Just
+keep matching.
+
 **Read first** (in this order):
 
 1. `CLAUDE.md` — IP rules, ultralib exception, build commands, workflow.
