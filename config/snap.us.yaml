@@ -109,6 +109,8 @@ segments:
       - [0x5624, asm]
       - [0x56F8, c, func_80104AF8]
       - [0x5770, asm]
+      - [0x5994, c, func_80104D94]
+      - [0x59E8, asm]
       - [0x5A7C, c, func_80104E7C]
       - [0x5AA4, c, func_80104EA4]
       - [0x5B24, asm]
