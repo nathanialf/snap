@@ -473,7 +473,7 @@ segments:
       - [0x32D90, asm]
       - [0x32DF0, c, func_801321F0]
       - [0x32E40, c, func_80132240]
-      - [0x32E60, asm]
+      - [0x32E60, c, func_80132260]
       - [0x32ED0, asm]
       - [0x33000, c, func_80132400]
       - [0x33030, asm]
