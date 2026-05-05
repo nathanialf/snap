@@ -451,6 +451,8 @@ segments:
       - [0x30A34, c, func_8012FE34]
       - [0x30A6C, asm]
       - [0x30C80, asm]
+      - [0x31438, c, func_80130838]
+      - [0x314EC, asm]
       - [0x31DF8, c, func_801311F8]
       - [0x31E5C, asm]
       - [0x31ECC, c, func_801312CC]
