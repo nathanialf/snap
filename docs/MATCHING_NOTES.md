@@ -11,6 +11,16 @@ that resisted a quick match and what to investigate next.
 - After editing C, `tools/match_check.py 0xADDR:0xSIZE` reads the linked
   ROM and the baserom and prints word-by-word side-by-side diffs without
   parsing make output.
+- When `make` ends in `MISMATCH: expected SHA-1 X got Y` and you don't
+  yet know which function regressed, run `tools/first_diff.py`. It walks
+  both ROMs, looks each differing word up in `build/pokemonsnap.us.map`,
+  and prints `<FUNC>+<OFFSET>:  base= <DISASM>     built= <DISASM>` for
+  the first 5 instructions that differ (override with `-n`). jal/j
+  targets are resolved through the mapfile, so the disassembly shows
+  the actual destination function name. Use this BEFORE `match_check.py`
+  when you don't know which subsegment to inspect, and BEFORE
+  `diff_objs.py` when you want a one-shot picture across the whole
+  binary rather than a single object.
 - Splat is slow (~60s). Batch many yaml flips into one `make split`.
 - When iterating on a single C source, you don't need to re-split — just
   edit `src/foo.c` and rerun `make`. Splat only needs to run when yaml

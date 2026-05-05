@@ -2,7 +2,8 @@
 # decomp projects. Re-pin if a CI run breaks.
 splat64
 spimdisasm
-rabbitizer
+rabbitizer>=1.12,<2
+mapfile-parser>=2.7,<3
 intervaltree
 pyelftools
 pyyaml
