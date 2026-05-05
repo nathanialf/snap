@@ -20,18 +20,22 @@ Node *func_80109E94(Node *arg0, s32 arg1) {
 
     new = func_80008A30(arg0);
     cur = arg0->_10;
-    if (cur == 0) {
-        arg0->_10 = new;
-        new->_C = 0;
-    } else {
-        if (cur->_8 != 0) {
-            cur = cur->_8;
-            while (cur->_8 != 0) {
-                cur = cur->_8;
-            }
+    if (cur != 0) {
+        Node *next;
+        next = cur->_8;
+        if (next != 0) {
+            cur = next;
+            do {
+                next = cur->_8;
+                if (next == 0) break;
+                cur = next;
+            } while (1);
         }
         cur->_8 = new;
         new->_C = cur;
+    } else {
+        arg0->_10 = new;
+        new->_C = 0;
     }
     new->_14 = arg0;
     new->_10 = 0;
