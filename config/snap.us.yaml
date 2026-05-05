@@ -437,7 +437,6 @@ segments:
       - [0x36320, c, func_80135720]
       - [0x36340, c, ultra_os_func_80135740]
       - [0x363B0, asm]
-      - [0x363B0, asm]
       - [0x36470, asm]
       - [0x365E0, c, func_801359E0]
       - [0x366A0, asm]
