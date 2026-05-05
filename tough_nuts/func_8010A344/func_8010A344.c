@@ -38,12 +38,14 @@ u8 arg2;
 s32 arg3;
 {
     Foo *v;
+    Foo *ret;
 
     if (arg2 >= 0x20) {
         func_80025F24(D_80043478, arg2, arg0);
         while (1) {}
     }
     v = func_80008394();
+    ret = v;
     if (v == 0) {
         return 0;
     }
@@ -61,7 +63,7 @@ s32 arg3;
     v->_D = 0x21;
     v->_4C = 0.0f;
     v->_14 = arg1;
-    v->_54 = 0;
-    v->_58 = 0;
-    return v;
+    ret->_54 = 0;
+    ret->_58 = 0;
+    return ret;
 }
