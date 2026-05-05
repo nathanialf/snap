@@ -333,8 +333,6 @@ segments:
       - [0x29D60, c, func_80129160]
       - [0x29D68, asm]
       - [0x2A810, c, func_80129C10]
-      - [0x2A87C, c, func_80129C7C]
-      - [0x2A8A0, c, func_80129CA0]
       - [0x2A8D0, asm]
       - [0x2A970, asm]
       - [0x2ACC0, asm]
