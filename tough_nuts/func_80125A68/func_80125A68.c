@@ -1,12 +1,17 @@
 #include "common.h"
 
-extern void func_80025938(s32, s32 *, s32, s32);
+typedef char *va_list;
+#define _VA_ALIGN(p, a) (((unsigned int)(((char *)p) + ((a) > 4 ? (a) : 4) - 1)) & -((a) > 4 ? (a) : 4))
+#define va_start(vp, parmN) (vp = ((va_list)&parmN + sizeof(parmN)))
+#define va_end(list)
 
-void func_80125A68(arg0, arg1, arg2, arg3)
-s32 arg0;
-s32 arg1;
-s32 arg2;
-s32 arg3;
-{
-    func_80025938(arg0, &arg1, arg2, arg3);
+extern void func_80025938(s32 arg0, va_list ap);
+
+void func_80125A68(s32 arg0, ...) {
+    va_list ap;
+    char *base;
+
+    base = (char *)&arg0;
+    ap = base + sizeof(arg0);
+    func_80025938(arg0, (va_list)_VA_ALIGN(ap, 4));
 }
