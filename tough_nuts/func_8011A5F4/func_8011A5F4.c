@@ -1,13 +1,13 @@
 #include "common.h"
 
-extern f32 func_8001A360(f32 *);
+extern void func_8001A360(f32 *);
 
-f32 func_8011A5F4(f32 *arg0, f32 arg1, f32 *arg2, f32 arg3) {
-    arg0[0] *= arg1;
-    arg0[1] *= arg1;
-    arg0[2] *= arg1;
-    arg0[0] += arg2[0] * arg3;
-    arg0[1] += arg2[1] * arg3;
-    arg0[2] += arg2[2] * arg3;
-    return func_8001A360(arg0);
+void func_8011A5F4(f32 *v, f32 scale, f32 *offset_src, f32 offset_scale) {
+    v[0] *= scale;
+    v[1] *= scale;
+    v[2] *= scale;
+    v[0] += offset_src[0] * offset_scale;
+    v[1] += offset_src[1] * offset_scale;
+    v[2] += offset_src[2] * offset_scale;
+    func_8001A360(v);
 }
