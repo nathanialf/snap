@@ -265,7 +265,7 @@ segments:
       - [0x1D76C, asm]
       - [0x1DC78, c, func_8011D078]
       - [0x1DCC4, c, func_8011D0C4]
-      - [0x1DD84, asm]
+      - [0x1DD84, c, func_8011D184]
       - [0x1DDF0, c, func_8011D1F0]
       - [0x1DE6C, asm]
       - [0x1E248, c, func_8011D648]
