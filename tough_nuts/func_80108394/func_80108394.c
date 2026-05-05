@@ -18,20 +18,20 @@ extern void func_80025F24(u8 *, ...);
 Slot *func_80108394(void) {
     Slot *e;
 
-    if (D_8004AC02 != -1) {
-        if (D_8004AC02 <= D_8004ABFC) {
-            func_80025F24(D_800432E4);
-            while (1) {}
-        }
+    if (D_8004AC02 == -1) {
+        goto skip_check;
     }
+    if (D_8004AC02 <= D_8004ABFC) {
+        goto err_budget;
+    }
+skip_check:
     e = D_8004AAE8;
     if (e == 0) {
         e = func_800054A0(D_8004AC00, 8);
         D_8004AAE8 = e;
     }
     if (e == 0) {
-        func_80025F24(D_80043300);
-        while (1) {}
+        goto err_empty;
     }
     if (e != 0) {
         D_8004AAE8 = e->next;
@@ -39,4 +39,12 @@ Slot *func_80108394(void) {
         return e;
     }
     return 0;
+
+err_budget:
+    func_80025F24(D_800432E4);
+    while (1) {}
+
+err_empty:
+    func_80025F24(D_80043300);
+    while (1) {}
 }
