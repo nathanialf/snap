@@ -7,38 +7,47 @@ new cursor exceeds `arg0[2]` (max). On overflow it calls
 
 Returns the (pre-advance) aligned cursor.
 
-## What's matching
+## Closest seed: `arg2--; v1 = (arg0[3]+arg2) & ~arg2;`
 
-Everything around the if/branch structure, the bump update, the
-overflow check, and the diagnostic call site.
-
-## What's different (CSE on `align - 1`)
-
-Base computes `(align - 1)` once into v0, uses it both as the
-addend (`arg0[3] + (align-1)`) and as the source for `~(align-1)`.
-
-Built decomposes: computes `align - 1` for the mask, but turns the
-addend into `(arg0[3] + align) - 1`, which inserts an extra
-`addiu rN, rM, -1` instruction and shifts every subsequent slot.
+Compiles to **5 instructions** matching target's instruction count
+exactly. Only diff: target uses `v0` for the modified arg2 value,
+mine uses `a2` (in-place modify):
 
 ```
-8470  base 24c2ffff (addiu v0, a2, -1)   built 24d9ffff (addiu t9, a2, -1)
-8474  base 0040c027 (not   t8, v0)       built 03204027 (nor   t0, t9, $0)
-8478  base 01c27821 (addu  t7, t6, v0)   built 01c67821 (addu  t7, t6, a2)
-847c  base 10000002 (b ...)              built 25f8ffff (addiu t8, t7, -1)
-8480  base 01f81824 (and   v1, t7, t8)   built 10000002 (b)
-8484  base ...                           built 03081824 (and v1, t8, t0)
+target:                       built (arg2-- form):
+addiu v0, a2, -1              addiu a2, a2, -1
+not   t8, v0                  nor   t8, a2, zero
+addu  t7, t6, v0              addu  t7, t6, a2
+b     ...                     b     ...
+ and  v1, t7, t8               and  v1, t7, t8
 ```
 
-## Variants tried
+Pure register-allocation diff: a2 vs v0.
 
-- `(arg0[3] + (align - 1)) & ~(align - 1)` — built decomposes
-- `mask = align - 1; (arg0[3] + mask) & ~mask` — same diff
-- Compound assigns `pos += mask; pos &= ~mask;` — different diff,
-  same family
+## CRITICAL FIX: pointer comparison must be UNSIGNED
+
+`arg0` should be declared `u32 *` (or use `(u32)` casts on the
+compare). The bounds check `if (arg0[2] < arg0[3])` is comparing
+pointer values — `sltu` on the asm side. Declaring `s32 *arg0` produces
+`slt` (signed) and breaks the match.
+
+## Other variants tried (worse)
+
+- `(arg0[3] + (align - 1)) & ~(align - 1)`: IDO peephole rewrites to
+  `(arg0[3] + arg2) - 1`, inserting an extra `addiu reg, reg, -1`.
+  Mask in t9 is computed but never used in the addu — IDO recomputes
+  via a2 directly. 6 instructions, 1 extra.
+- `mask = arg2 - 1; v1 = (arg0[3] + mask) & ~mask`: same as above.
+- `mask = arg2 - 1; v1 = arg0[3] + mask; v1 &= ~mask`: same.
+- Explicit `sum = arg0[3] + mask; v1 = sum & ~mask`: forced spill of
+  sum to stack, BIGGER frame, worse.
+
+The IDO peephole that turns `(arg0[3] + arg2 - 1)` into
+`(arg0[3] + arg2) - 1` is stubborn — it kicks in unless `arg2` is
+modified in place (the `arg2--` form).
 
 ## Permuter hint
 
-Try forcing CSE with a `register` or `volatile` local for the mask,
-or split the if-body into two halves where the mask is reused via
-pointer/load. May also clear at -O1 or by reordering the compare.
+Permuter on the **arg2-- form** (current seed). Just one register
+permutation needed: `a2 → v0` for the in-place-modify. The rest of
+the function already matches perfectly (with `u32 *arg0`).
