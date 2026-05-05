@@ -220,6 +220,8 @@ segments:
       - [0x173F4, asm]
       - [0x17888, c, func_80116C88]
       - [0x178E0, asm]
+      - [0x18368, c, func_80117768]
+      - [0x183D8, asm]
       - [0x198D0, c, func_80118CD0]
       - [0x198DC, asm]
       - [0x19DD8, c, func_801191D8]
