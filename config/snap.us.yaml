@@ -132,6 +132,8 @@ segments:
       - [0x82F0, asm]
       - [0x8450, c, func_80107850]
       - [0x845C, asm]
+      - [0x84C4, c, func_801078C4]
+      - [0x8510, asm]
       - [0x85B8, c, func_801079B8]
       - [0x8604, c, func_80107A04]
       - [0x8814, asm]
