@@ -101,6 +101,7 @@ segments:
       - [0x2498, asm]
       - [0x30E4, c, func_801024E4]
       - [0x3110, asm]
+      - [0x3554, c, func_80102954]
       - [0x35BC, c, func_801029BC]
       - [0x3610, asm]
       - [0x3820, c, func_80102C20]
