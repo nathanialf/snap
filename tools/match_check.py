@@ -19,6 +19,12 @@ def main() -> int:
     p.add_argument("--base", default="baserom.us.z64")
     p.add_argument("--built", default="build/pokemonsnap.us.z64")
     p.add_argument(
+        "-v",
+        "--full",
+        action="store_true",
+        help="Print every word, not just differing ones.",
+    )
+    p.add_argument(
         "ranges",
         nargs="+",
         help="addr:size pairs, e.g. 0x391B0:0xC. Size may be omitted (defaults"
@@ -45,14 +51,23 @@ def main() -> int:
         any_diff = True
         print(f"  DIFF   {addr:#08x} +{size:#x}")
         # Word-by-word
+        total_words = 0
+        diff_words = 0
         for i in range(0, size, 4):
             wa = a[i : i + 4]
             wb = b[i : i + 4]
-            mark = "  " if wa == wb else "<>"
-            print(
-                f"    {addr + i:08x}  base {wa.hex():<10}  "
-                f"built {wb.hex():<10} {mark}"
-            )
+            differs = wa != wb
+            total_words += 1
+            if differs:
+                diff_words += 1
+            if args.full or differs:
+                mark = "  " if not differs else "<>"
+                print(
+                    f"    {addr + i:08x}  base {wa.hex():<10}  "
+                    f"built {wb.hex():<10} {mark}"
+                )
+        if not args.full:
+            print(f"    {diff_words}/{total_words} differ")
     return 1 if any_diff else 0
 
 
