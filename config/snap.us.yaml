@@ -205,7 +205,7 @@ segments:
       - [0xBAC4, asm]
       - [0xC2F0, c, func_8010B6F0]
       - [0xC340, c, func_8010B740]
-      - [0xC374, asm]
+      - [0xC374, c, func_8010B774]
       - [0xC408, c, func_8010B808]
       - [0xC430, c, func_8010B830]
       - [0xC480, asm]
