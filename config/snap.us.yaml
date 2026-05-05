@@ -142,7 +142,7 @@ segments:
       - [0x8914, asm]
       - [0x8A80, c, func_80107E80]
       - [0x8AF8, c, func_80107EF8]
-      - [0x8B24, asm]
+      - [0x8B24, c, func_80107F24]
       - [0x8C00, c, func_80108000]
       - [0x8C24, c, func_80108024]
       - [0x8CA0, c, func_801080A0]
