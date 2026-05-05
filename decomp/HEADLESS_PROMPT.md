@@ -98,6 +98,11 @@ Match function clusters until your usage cap is about to run out.
 
 4. **Edit yaml + write seed.** Add `[0xADDR, c, name]` to
    `config/snap.us.yaml`. `make split`. Write `src/<name>.c`. `make`.
+   **Iterate with `tools/quick_diff.sh <name>`** (~120ms) instead of
+   the full `make split && make` cycle — only flip the yaml and run
+   `make` once you think you're matching, to confirm via SHA-1.
+   On failure, `tools/first_diff.py` prints the first diverging
+   instruction with symbol-resolved jal targets.
 
 5. **If MISMATCH and shape is operand-order / regalloc / scheduling:**
    `timeout 300 tools/permute_run.sh <vram> <size> /tmp/seed.c`.

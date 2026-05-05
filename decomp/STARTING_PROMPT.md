@@ -74,6 +74,26 @@ keep matching.
 
 **Toolkit** (run `--help` on each before first use):
 
+**Fast inner-loop diff (use these BEFORE `make split && make`):**
+- `tools/quick_diff.sh <func_name>` — compile one .c (from `src/` or
+  `tough_nuts/`) and side-by-side diff against the target asm in
+  `asm/<rom>.s` or `asm/nonmatchings/.../<func>.s`. Skips splat and
+  full-ROM linking — runs in ~120ms vs ~30-60s for `make split && make`.
+  This is the iteration loop for tough nuts.
+- `tools/make_expected.sh` then `.venv/bin/python lib/ultralib/tools/asm_differ/diff.py -mwo <func_name>` —
+  asm-differ in watch+make mode for already-matched functions
+  (regression detection while editing). Snapshot `expected/build/`
+  once after a green build; re-snapshot when neighbours change.
+- `tools/first_diff.py` — when SHA-1 fails, prints the first diverging
+  instruction with the function name and jal targets resolved through
+  the mapfile. Run after a failed `make`.
+- `tools/m2ctx.py <input.c>` — flatten a C source's includes into
+  `ctx.c` for pasting into mips_to_c or decomp.me.
+- `tools/gen_permuter_settings.py` — re-emit `permuter_settings.toml`
+  after `IDO_DIR` changes or new project macros (`tools/permute_run.sh`
+  reads it automatically).
+
+**Existing analysis tools:**
 - `tools/find_siblings.py --unmatched` — next-highest-payoff clusters.
 - `tools/scan_kr_signals.py` — K&R sub-variant histogram.
 - `tools/find_matched_neighbors.py` — port a matched donor's C body
