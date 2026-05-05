@@ -2,10 +2,7 @@
 
 extern void *func_8002AB70(void *, void *);
 
-void func_801325B0(arg0, arg1)
-s32 *arg0;
-s32 *arg1;
-{
+void func_801325B0(s32 *arg0, s32 *arg1) {
     s32 *r;
     if (arg1[2] != 0) {
         r = (s32 *) func_8002AB70(arg0, arg1);
