@@ -164,6 +164,32 @@ If the monitor fires "timed out", that's the watch giving up — not a tool fail
    nuts" and pick a different cluster. Don't sink hours into one
    byte-level codegen difference.
 
+**Tough-nut directory.** `tough_nuts/<func_name>/` holds the best
+source-side attempt at a deferred near-miss + a `notes.md`
+describing what diff remained, what variants were tried, and any
+permuter hints. **This directory is NOT compiled into the build** —
+it's a parking lot for the operator to run the permuter against
+later, out-of-session. When you defer a near-miss:
+
+1. **Revert the yaml entry** back to `[ADDR, asm]` and **delete the
+   `src/<func>.c`** so the build stays green. (Standard wrap-up.)
+2. **Save the best-attempt source to `tough_nuts/<func>/<func>.c`**
+   (mkdir the subdir first). Keep the file body as it was before the
+   revert — the operator wants the closest near-miss as the
+   permuter seed.
+3. **Write `tough_nuts/<func>/notes.md`** with: ROM offset:size,
+   what's matching, remaining diff (instruction-level if useful),
+   variants tried, and a permuter hint (which knob seems to wedge
+   the regalloc, what siblings might benefit if cracked).
+4. Commit `tough_nuts/<func>/` as part of the same wrap-up commit
+   that reverts the yaml. The `.c` file is contributor work product
+   even though it doesn't build.
+
+If a `tough_nuts/<func>/` already exists from a prior session, prefer
+**updating** the existing notes.md (add a new "## Session YYYY-MM-DD"
+section with what changed) over rewriting from scratch — the layered
+history is what makes deferred entries cheaper to revisit.
+
 **Building leverage on tough nuts (the long game).** Defer is OK; the
 goal is for *each* deferred function to leave behind a documented
 pattern that makes the next attempt cheaper, ideally turning the
