@@ -38,9 +38,20 @@ else die "no C source found at src/$FN.c or tough_nuts/$FN/$FN.c"
 fi
 
 # ---- 2. Locate the asm file containing this function ----------------------
+#
+# Two cases:
+#   (a) function is yaml-as-asm — splat left it inside asm/<rom>.s with a
+#       'nonmatching <fn>, 0xSIZE' header.
+#   (b) function is yaml-as-c   — splat moved its body to
+#       asm/nonmatchings/<dir>/<fn>.s (so a GLOBAL_ASM-like include can
+#       reference it). Format is `glabel <fn>` ... `endlabel <fn>` with no
+#       leading 'nonmatching' line.
 
 ASM_HIT="$(grep -l -E "^nonmatching $FN, 0x[0-9A-Fa-f]+" "$ROOT"/asm/*.s 2>/dev/null | head -1)"
-[ -n "$ASM_HIT" ] || die "no 'nonmatching $FN, 0xSIZE' line found in asm/*.s"
+if [ -z "$ASM_HIT" ]; then
+    ASM_HIT="$(grep -rl -E "^glabel $FN$" "$ROOT/asm/nonmatchings/" 2>/dev/null | head -1)"
+fi
+[ -n "$ASM_HIT" ] || die "no asm found in asm/*.s or asm/nonmatchings/**/$FN.s"
 
 # ---- 3. Pick CFLAGS based on the Makefile's per-file rules ----------------
 
