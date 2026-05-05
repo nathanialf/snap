@@ -16,6 +16,7 @@ extern void func_80032CFC(void *);
 extern void func_80032E8C(void *);
 
 void func_80101898(Foo *arg0) {
+    D_80048740 = arg0;
     D_80048820 = func_80036010(arg0);
     if (D_8004873C != 0 && D_8004873C->_8 == 2) {
         func_80035720();
@@ -26,5 +27,4 @@ void func_80101898(Foo *arg0) {
         func_80032E8C((u8 *) arg0 + 0x28);
         arg0->_8 = 2;
     }
-    D_80048740 = arg0;
 }
