@@ -26,8 +26,8 @@ nothing here embeds ROM bytes.
 
 | Metric              | Bytes |    % |
 |---------------------|------:|-----:|
-| Decompiled (matched)| 30736 | 0.18 |
-| Asm split           | 16745709 | 99.82 |
+| Decompiled (matched)| 30844 | 0.18 |
+| Asm split           | 16745601 | 99.82 |
 | Assets extracted    |  4032 | --   |
 
 _No baseline run has produced numbers yet — this table updates after the
