@@ -305,7 +305,8 @@ SECTIONS
         build/src/sound_chan_misc.o(.text);
         build/asm/23C74.o(.text);
         build/src/func_80123104.o(.text);
-        build/asm/23D1C.o(.text);
+        build/src/func_8012311C.o(.text);
+        build/asm/23D68.o(.text);
         build/src/func_801239CC.o(.text);
         build/asm/245E0.o(.text);
         build/src/func_80124200.o(.text);
@@ -962,7 +963,8 @@ SECTIONS
         build/src/sound_chan_misc.o(.data);
         build/asm/23C74.o(.data);
         build/src/func_80123104.o(.data);
-        build/asm/23D1C.o(.data);
+        build/src/func_8012311C.o(.data);
+        build/asm/23D68.o(.data);
         build/src/func_801239CC.o(.data);
         build/asm/245E0.o(.data);
         build/src/func_80124200.o(.data);
@@ -1619,7 +1621,8 @@ SECTIONS
         build/src/sound_chan_misc.o(.rodata);
         build/asm/23C74.o(.rodata);
         build/src/func_80123104.o(.rodata);
-        build/asm/23D1C.o(.rodata);
+        build/src/func_8012311C.o(.rodata);
+        build/asm/23D68.o(.rodata);
         build/src/func_801239CC.o(.rodata);
         build/asm/245E0.o(.rodata);
         build/src/func_80124200.o(.rodata);
@@ -2281,7 +2284,8 @@ SECTIONS
         build/src/sound_chan_misc.o(.bss);
         build/asm/23C74.o(.bss);
         build/src/func_80123104.o(.bss);
-        build/asm/23D1C.o(.bss);
+        build/src/func_8012311C.o(.bss);
+        build/asm/23D68.o(.bss);
         build/src/func_801239CC.o(.bss);
         build/asm/245E0.o(.bss);
         build/src/func_80124200.o(.bss);
