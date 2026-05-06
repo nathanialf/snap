@@ -410,7 +410,7 @@ segments:
       - [0x2B770, c, func_8012AB70]
       - [0x2B850, asm]
       - [0x2B89C, c, func_8012AC9C]
-      - [0x2B8C0, asm]
+      - [0x2B8C0, c, func_8012ACC0]
       - [0x2B920, asm]
       - [0x2BDE0, c, func_8012B1E0]
       - [0x2BE88, c, func_8012B288]
