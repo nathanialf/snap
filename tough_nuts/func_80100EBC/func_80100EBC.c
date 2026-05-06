@@ -30,10 +30,13 @@ extern void func_80035660(s32);
 void func_80100EBC(void)
 {
   Block50 *new_var2;
+  Block50 *new_var3;
   u32 new_var;
   D_80048758 = D_800487A8;
   new_var2 = &D_800487A8;
-  if (((((&D_800487A8) && (&D_800487A8)) ^ 0) && new_var2) != 0)
+ do { } while (0);
+  new_var3 = &D_800487A8;
+  new_var = ((((&D_800487A8) && new_var3) ^ 0) && new_var2) != 0;
   {
   }
   func_80035740();
