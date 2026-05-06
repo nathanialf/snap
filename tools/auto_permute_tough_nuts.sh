@@ -127,9 +127,9 @@ already_done() {
     if grep -lE "^[a-z][a-z0-9 *_]* ${name}[(]" "${PROJECT_ROOT}/src/"*.c >/dev/null 2>&1; then
         return 0
     fi
-    # Permuter already found a match in a prior run?
-    local run_output="${PROJECT_ROOT}/tools/decomp-permuter/runs/${name}/output"
-    if [ -d "${run_output}" ] && [ -n "$(ls -A "${run_output}" 2>/dev/null)" ]; then
+    # Permuter already found a score-0 match in a prior run?
+    local run_dir="${PROJECT_ROOT}/tools/decomp-permuter/runs/${name}"
+    if ls -d "${run_dir}"/output-0-* >/dev/null 2>&1; then
         return 0
     fi
     return 1
@@ -236,27 +236,27 @@ run_one() {
     return 1
 }
 
-# Promote the lowest-score candidate from runs/<name>/output/ into the
-# tough_nuts seed file, so the next round-robin pass starts from improved
-# C instead of the original seed. Permuter names files like source_42.c
-# where 42 is the score (lower is better; 0 is a perfect match).
+# Promote the lowest-score candidate from runs/<name>/output-N-K/source.c
+# into the tough_nuts seed file, so the next round-robin pass starts from
+# improved C instead of the original seed. Permuter writes:
+#   runs/<name>/output-<score>-<num>/source.c
+# where score is the number we want to minimize (0 = perfect match).
 promote_best_into_seed() {
     local name="$1"
     local seed="$2"
-    local out_dir="${PROJECT_ROOT}/tools/decomp-permuter/runs/${name}/output"
-    [ -d "${out_dir}" ] || return 0
-    # Find the file with the smallest numeric suffix.
-    local best
-    best="$(ls -1 "${out_dir}" 2>/dev/null | \
-        grep -E 'source_[0-9]+\.c$' | \
-        awk -F'[_.]' '{print $2, $0}' | \
+    local run_dir="${PROJECT_ROOT}/tools/decomp-permuter/runs/${name}"
+    [ -d "${run_dir}" ] || return 0
+    # Find the output-N-K directory with the smallest N.
+    local best_dir
+    best_dir="$(ls -d "${run_dir}"/output-*-* 2>/dev/null | \
+        sed -nE 's|.*/output-([0-9]+)-.*|\1 &|p' | \
         sort -n | head -1 | awk '{print $2}')"
-    if [ -z "${best}" ]; then
+    if [ -z "${best_dir}" ] || [ ! -f "${best_dir}/source.c" ]; then
         return 0
     fi
-    local best_path="${out_dir}/${best}"
-    local best_score="${best%.c}"
-    best_score="${best_score#source_}"
+    local best_path="${best_dir}/source.c"
+    local best_score
+    best_score="$(basename "${best_dir}" | sed -nE 's|^output-([0-9]+)-.*|\1|p')"
     # Compare to current seed — only promote if different (avoid noisy diffs).
     if cmp -s "${best_path}" "${seed}"; then
         log "  best already matches seed (score ${best_score}, no promotion)"
