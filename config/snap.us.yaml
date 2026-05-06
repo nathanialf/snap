@@ -440,6 +440,7 @@ segments:
       - [0x2CF70, asm]
       - [0x2DBE0, asm]
       - [0x2DED0, asm]
+      - [0x2E9E0, c, func_8012DDE0]
       - [0x2EA50, c, func_8012DE50]
       - [0x2EA70, c, func_8012DE70]
       - [0x2EAB0, asm]
