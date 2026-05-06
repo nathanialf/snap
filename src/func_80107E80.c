@@ -21,3 +21,9 @@ void *func_80107E80(void) {
     D_8004A994++;
     return r;
 }
+
+void func_80107EF8(void **arg0) {
+    arg0[0] = D_8004A990;
+    D_8004A990 = arg0;
+    D_8004A994--;
+}
