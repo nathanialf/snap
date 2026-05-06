@@ -29,13 +29,21 @@ extern void func_80034A00(u8 *, s32, u8 *, u8 *, u8 *, s32);
 extern void func_8003D0F0(u8 *);
 void func_80100870(void)
 {
-  volatile int new_var;
+  volatile unsigned int new_var;
+  int new_var4;
+  int new_var2;
+  u8 *new_var3;
   D_800456A8 = 0xFEDCBA98ULL;
-  func_8003D8A0(0x04900000);
+  func_8003D8A0((float) 0x04900000);
+  new_var3 = D_800486A8;
   func_80034E30();
-  func_80034A00(D_80045870, 1, D_800007C4, D_800486A8, D_80045B20, (0, 0x7F & 0xFFFFu));
- D_80045A58 = (new_var = 0xFEDCBA98ULL); func_8003D0F0(D_80045870); if (D_800486A8) { }
-  if (!D_80045870)
+  func_80034A00(D_80045870, new_var2 = 1, D_800007C4, new_var3, D_80045B20, (0, 0x7F & 0xFFFFu));
+ new_var2 = (new_var = 0xFEDCBA98ULL); D_80045A58 = new_var2; func_8003D0F0(D_80045870); new_var4 = !D_80045870;
+  if (D_800486A8)
+  {
+ ;
+  }
+  if (new_var4)
   {
   }
 }
