@@ -400,7 +400,7 @@ segments:
       - [0x2AD70, asm]
       - [0x2AF90, c, func_8012A390]
       - [0x2AFD0, asm]
-      - [0x2B060, asm]
+      - [0x2B060, c, func_8012A460]
       - [0x2B0C0, c, func_8012A4C0]
       - [0x2B100, c, func_8012A500]
       - [0x2B120, asm]
