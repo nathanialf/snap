@@ -405,7 +405,7 @@ segments:
       - [0x2B100, c, func_8012A500]
       - [0x2B120, asm]
       - [0x2B1B0, asm]
-      - [0x2B240, asm]
+      - [0x2B240, c, func_8012A640]
       - [0x2B2A0, asm]
       - [0x2B770, c, func_8012AB70]
       - [0x2B850, asm]
