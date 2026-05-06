@@ -4,10 +4,10 @@ typedef struct Node {
     struct Node *next;
 } Node;
 
-Node *func_8013125C(s32 *arg0, u8 *arg1) {
+void func_8013125C(s32 *arg0, u8 *arg1) {
     Node *prev = 0;
-    Node *target = (Node *) (arg1 - 4);
     Node *cur = (Node *) arg0[26];
+    Node *target = (Node *) (arg1 - 4);
 
     if (cur != 0) {
         do {
@@ -22,11 +22,10 @@ Node *func_8013125C(s32 *arg0, u8 *arg1) {
                 }
                 cur->next = (Node *) arg0[28];
                 arg0[28] = (s32) cur;
-                return prev;
+                return;
             }
             prev = cur;
             cur = cur->next;
         } while (cur != 0);
     }
-    return prev;
 }
