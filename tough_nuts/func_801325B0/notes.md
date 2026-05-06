@@ -15,35 +15,34 @@ A *arg1;
             *(s16*)((u8*)r + 8) = 0xF;
             r[0] = 0;
             r[1] = arg0->_1C + arg1->_8->_D8;
-            arg1->_8->_C->func(3, r);   /* function pointer at offset 8 of _C */
+            vt = arg1->_8->_C;
+            ((void(*)(s32*, s32, s32*)) vt[2])(vt, 3, r);  /* 3-arg call: this + 3 + r */
         }
     }
 }
 ```
 
-K&R signature with both args spilled. arg0 spilled in prologue,
-arg1 spilled in jal delay slot.
+The dispatch is a 3-arg call: `vt = arg1->_8->_C` is the "this" pointer,
+which is also where the function pointer is read from at offset 8.
 
-## What's matching
-- beql + jal + call structure
-- Field offsets (_8, _1C, _D8, _C, etc.)
-- Final indirect call with $a1=3, $a2=r
+## What's matching (~25/30)
+- 3-arg call signature: a0=vt (this), a1=3, a2=r
+- Single dereference for fp lookup (NOT pointer-to-fp)
+- Field offsets and arithmetic
+- arg1 reload into $a3 post-call (target re-uses $a3 as base)
 
-## Remaining diff (~25 instructions)
-**Spurious `or $a2, $a1, $zero` before the beql** in built — IDO
-decided to copy arg1 into $a2 before the call. Base doesn't do this.
-Cascade-shifts everything by 1 instruction.
-
-After the spurious move, built spills `$a2` (instead of `$a1`) into
-the home position, then reloads `$a2` post-call. Logically
-equivalent but byte-different.
+## Remaining diff (~3 instructions)
+**Spurious `or $a3, $a1, $zero` before the beql** in built — IDO copies
+arg1 into $a3 BEFORE the jal so it survives, then spills $a3. Target
+spills $a1 directly in jal delay slot (`sw $a1, 0x1C(sp)`) and reloads
+to $a3 after the call — same end state, 1 fewer instruction.
 
 ## Variants tried
-- With local `s32 *p = (s32*)arg1[2]`: same diff
-- Without the local: same diff
+- ANSI prototype + 3-arg call: closest (only early-move diff)
+- K&R prototype: same diff
+- With/without local `vt`: same diff
 
 ## Permuter hint
-The pre-call `or $a2, $a1, $zero` is the wedge. Once IDO can be
-coerced to skip that, the rest may fall in line. Permuter should
-try mutations on how arg1 is read in the body (e.g., reading via a
-specific u32 cast, or moving reads earlier/later).
+Pure scheduling wedge — single `or a3, a1, 0` before beql. Permuter
+should try mutations on the order of `arg1[2]` reads or introducing
+dummy uses of arg1 to defer IDO's pre-spill copy decision.
