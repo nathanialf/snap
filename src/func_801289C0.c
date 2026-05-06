@@ -20,9 +20,10 @@ extern void func_80029E80(s32 *, Msg *, s32);
 
 void func_801289C0(Foo *arg0) {
     Msg msg;
-    s32 _filler[2];
+    u8 *base;
 
+    base = arg0->_40;
     msg.type = 1;
-    msg.ptr = arg0->_40 + arg0->_3C * 48;
+    msg.ptr = base + arg0->_3C * 48;
     func_80029E80(&arg0->_14, &msg, 0);
 }
